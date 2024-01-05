@@ -242,6 +242,92 @@ public class OutputAnalyzerTest {
                 }
             }
         }
+
+        String stdOut = "aaaaa\nbbbbb\n";
+        String stdErr = "cccc\nddddd\n";
+        OutputAnalyzer ot = new OutputAnalyzer(stdOut, stdErr);
+        try {
+            String[] needles = {"aa", "bb"};
+            ot.shouldContainMultiLinePattern(needles);
+        } catch (RuntimeException e) {
+            throw new Exception("shouldContainMultiLinePattern failed", e);
+        }
+
+        try {
+            String[] needles = {"aaaa", "cccc", "bbbbb"};
+            ot.shouldContainMultiLinePattern(needles);
+            throw new Exception("shouldContainMultiLinePattern failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        try {
+            String[] regex = {"a.", "b.", "c.", "d."};
+            ot.shouldMatchMultiLinePattern(regex);
+        } catch (RuntimeException e) {
+            throw new Exception("shouldMatchMultiLinePattern failed", e);
+        }
+
+        try {
+            String[] regex = {"a.", "c."};
+            ot.shouldMatchMultiLinePattern(regex);
+            throw new Exception("shouldMatchMultiLinePattern failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        try {
+            String[] needles = {"aa", "cc"};
+            ot.shouldContain(needles);
+        } catch (RuntimeException e) {
+            throw new Exception("shouldContain failed", e);
+        }
+
+        try {
+            String[] needles = {"aa", "zzzz"};
+            ot.shouldContain(needles);
+            throw new Exception("shouldContain failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        try {
+            String[] needles = {"d.", ".a", ".b"};
+            ot.shouldMatch(needles);
+        } catch (RuntimeException e) {
+            throw new Exception("shouldMatchTrivialOrder failed", e);
+        }
+
+        try {
+            String[] needles = {"\\d"};
+            ot.shouldMatch(needles);
+            throw new Exception("shouldMatchTrivialOrder failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        try {
+            String[] needles = {"a.", "c."};
+            ot.shouldMatchOrderedPatternsInterleavedLines(needles);
+        } catch (RuntimeException e) {
+            throw new Exception("shouldMatchOrderedPatternsInterleavedLines failed");
+        }
+
+        try {
+            String[] needles = {"a.", "z.", "d."};
+            ot.shouldMatchOrderedPatternsInterleavedLines(needles);
+            throw new Exception("shouldMatchOrderedPatternsInterleavedLines failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
+
+        try {
+            String[] needles = {"d.", "a."};
+            ot.shouldMatchOrderedPatternsInterleavedLines(needles);
+            throw new Exception("shouldMatchOrderedPatternsInterleavedLines failed");
+        } catch (RuntimeException e) {
+            // expected
+        }
     }
 
 }
