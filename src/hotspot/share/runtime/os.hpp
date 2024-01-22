@@ -229,6 +229,13 @@ class os: AllStatic {
                                           char* addr, bool executable);
   static bool   pd_release_memory_special(char* addr, size_t bytes);
 
+  static void warn_fail_reserve_memory(size_t bytes, int err);
+  static void warn_fail_attempt_reserve_memory_at(char* addr, size_t bytes, int err);
+  static void warn_attempt_reserve_successful_other_addr(char* requested_addr, char* addr, size_t bytes);
+  static void warn_fail_commit_memory(char* addr, size_t bytes, int err);
+  static void warn_fail_uncommit_memory(char* addr, size_t bytes, int err);
+  static void warn_fail_release_memory(char* addr, size_t bytes, int err);
+
   static size_t page_size_for_region(size_t region_size, size_t min_pages, bool must_be_aligned);
 
   // Get summary strings for system information in buffer provided

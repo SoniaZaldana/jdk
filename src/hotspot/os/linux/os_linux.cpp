@@ -2808,20 +2808,20 @@ static bool recoverable_mmap_error(int err) {
   }
 }
 
-static void warn_fail_commit_memory(char* addr, size_t size, bool exec,
-                                    int err) {
-  warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
-          ", %d) failed; error='%s' (errno=%d)", p2i(addr), size, exec,
-          os::strerror(err), err);
-}
+// static void warn_fail_commit_memory(char* addr, size_t size, bool exec,
+//                                     int err) {
+//   warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
+//           ", %d) failed; error='%s' (errno=%d)", p2i(addr), size, exec,
+//           os::strerror(err), err);
+// }
 
-static void warn_fail_commit_memory(char* addr, size_t size,
-                                    size_t alignment_hint, bool exec,
-                                    int err) {
-  warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
-          ", " SIZE_FORMAT ", %d) failed; error='%s' (errno=%d)", p2i(addr), size,
-          alignment_hint, exec, os::strerror(err), err);
-}
+// static void warn_fail_commit_memory(char* addr, size_t size,
+//                                     size_t alignment_hint, bool exec,
+//                                     int err) {
+//   warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
+//           ", " SIZE_FORMAT ", %d) failed; error='%s' (errno=%d)", p2i(addr), size,
+//           alignment_hint, exec, os::strerror(err), err);
+// }
 
 // NOTE: Linux kernel does not really reserve the pages for us.
 //       All it does is to check if there are enough free pages
@@ -2841,7 +2841,8 @@ int os::Linux::commit_memory_impl(char* addr, size_t size, bool exec) {
   int err = errno;  // save errno from mmap() call above
 
   if (!recoverable_mmap_error(err)) {
-    warn_fail_commit_memory(addr, size, exec, err);
+    os::warn_fail_commit_memory(addr, size, err);
+    // warn_fail_commit_memory(addr, size, exec, err); // TODO - remove this?
     vm_exit_out_of_memory(size, OOM_MMAP_ERROR, "committing reserved memory.");
   }
 
@@ -2858,7 +2859,9 @@ void os::pd_commit_memory_or_exit(char* addr, size_t size, bool exec,
   int err = os::Linux::commit_memory_impl(addr, size, exec);
   if (err != 0) {
     // the caller wants all commit errors to exit with the specified mesg:
-    warn_fail_commit_memory(addr, size, exec, err);
+    os::warn_fail_commit_memory(addr, size, err);
+    // warn_fail_commit_memory(addr, size, exec, err); TODO - remove this?
+
     vm_exit_out_of_memory(size, OOM_MMAP_ERROR, "%s", mesg);
   }
 }
@@ -2913,7 +2916,9 @@ void os::pd_commit_memory_or_exit(char* addr, size_t size,
   int err = os::Linux::commit_memory_impl(addr, size, alignment_hint, exec);
   if (err != 0) {
     // the caller wants all commit errors to exit with the specified mesg:
-    warn_fail_commit_memory(addr, size, alignment_hint, exec, err);
+
+    os::warn_fail_commit_memory(addr, size, err);
+    // warn_fail_commit_memory(addr, size, alignment_hint, exec, err); TODO - remove this
     vm_exit_out_of_memory(size, OOM_MMAP_ERROR, "%s", mesg);
   }
 }
@@ -3338,6 +3343,10 @@ struct bitmask* os::Linux::_numa_membind_bitmask;
 bool os::pd_uncommit_memory(char* addr, size_t size, bool exec) {
   uintptr_t res = (uintptr_t) ::mmap(addr, size, PROT_NONE,
                                      MAP_PRIVATE|MAP_FIXED|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
+  if (res == (uintptr_t) MAP_FAILED) {
+    os::warn_fail_uncommit_memory(addr, size, errno);
+  }
+
   return res  != (uintptr_t) MAP_FAILED;
 }
 
@@ -3603,11 +3612,19 @@ static int anon_munmap(char * addr, size_t size) {
 }
 
 char* os::pd_reserve_memory(size_t bytes, bool exec) {
-  return anon_mmap(nullptr, bytes);
+  char* addr = anon_mmap(nullptr, bytes);
+  if (addr == nullptr) {
+    os::warn_fail_reserve_memory(bytes, errno);
+  }
+  return addr;
 }
 
 bool os::pd_release_memory(char* addr, size_t size) {
-  return anon_munmap(addr, size);
+  bool res = anon_munmap(addr, size);
+  if (! res) {
+    os::warn_fail_release_memory(addr, size, errno);
+  }
+  return res;
 }
 
 #ifdef CAN_SHOW_REGISTERS_ON_ASSERT
@@ -4105,14 +4122,18 @@ char* os::pd_attempt_reserve_memory_at(char* requested_addr, size_t bytes, bool 
   // Linux mmap allows caller to pass an address as hint; give it a try first,
   // if kernel honors the hint then we can return immediately.
   char * addr = anon_mmap(requested_addr, bytes);
+  int err = errno;
   if (addr == requested_addr) {
     return requested_addr;
   }
 
   if (addr != nullptr) {
     // mmap() is successful but it fails to reserve at the requested address
-    log_trace(os, map)("Kernel rejected " PTR_FORMAT ", offered " PTR_FORMAT ".", p2i(requested_addr), p2i(addr));
+    os::warn_attempt_reserve_successful_other_addr(requested_addr, addr, bytes);
     anon_munmap(addr, bytes);
+  } else {
+    // mmap() failed
+    os::warn_fail_attempt_reserve_memory_at(requested_addr, bytes, err);
   }
 
   return nullptr;

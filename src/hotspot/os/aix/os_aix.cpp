@@ -292,10 +292,12 @@ static bool my_disclaim64(char* addr, size_t size) {
   const unsigned int lastDisclaimSize = (size % maxDisclaimSize);
 
   char* p = addr;
-
+  int err = 0;
   for (unsigned int i = 0; i < numFullDisclaimsNeeded; i ++) {
     if (::disclaim(p, maxDisclaimSize, DISCLAIM_ZEROMEM) != 0) {
+      err = errno;
       trcVerbose("Cannot disclaim %p - %p (errno %d)\n", p, p + maxDisclaimSize, errno);
+      os::warn_fail_uncommit_memory(addr, size, err);
       return false;
     }
     p += maxDisclaimSize;
@@ -303,7 +305,9 @@ static bool my_disclaim64(char* addr, size_t size) {
 
   if (lastDisclaimSize > 0) {
     if (::disclaim(p, lastDisclaimSize, DISCLAIM_ZEROMEM) != 0) {
+      err = errno;
       trcVerbose("Cannot disclaim %p - %p (errno %d)\n", p, p + lastDisclaimSize, errno);
+      os::warn_fail_uncommit_memory(addr, size, err);
       return false;
     }
   }
@@ -1559,8 +1563,11 @@ static char* reserve_shmated_memory (size_t bytes, char* requested_addr) {
 
   // Reserve the shared segment.
   int shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | S_IRUSR | S_IWUSR);
+  // Store errno
+  int err = errno;
   if (shmid == -1) {
     trcVerbose("shmget(.., " UINTX_FORMAT ", ..) failed (errno: %d).", size, errno);
+    os::warn_fail_reserve_memory(requested_addr, size, err);
     return nullptr;
   }
 
@@ -1598,6 +1605,7 @@ static char* reserve_shmated_memory (size_t bytes, char* requested_addr) {
 
   // Handle shmat error. If we failed to attach, just return.
   if (addr == (char*)-1) {
+    os::warn_fail_reserve_memory(requested_addr, size, errno_shmat);
     trcVerbose("Failed to attach segment at " PTR_FORMAT " (%d).", p2i(requested_addr), errno_shmat);
     return nullptr;
   }
@@ -1636,7 +1644,9 @@ static bool release_shmated_memory(char* addr, size_t size) {
 
   // TODO: is there a way to verify shm size without doing bookkeeping?
   if (::shmdt(addr) != 0) {
+    int err = errno;
     trcVerbose("error (%d).", errno);
+    os::warn_fail_release_memory(addr, size, err);
   } else {
     trcVerbose("ok.");
     rc = true;
@@ -1716,10 +1726,14 @@ static char* reserve_mmaped_memory(size_t bytes, char* requested_addr) {
   char* addr = (char*)::mmap(requested_addr, extra_size,
       PROT_READ|PROT_WRITE|PROT_EXEC, flags, -1, 0);
 
+  // store errno from mmap call
+  int err = errno;
   if (addr == MAP_FAILED) {
     trcVerbose("mmap(" PTR_FORMAT ", " UINTX_FORMAT ", ..) failed (%d)", p2i(requested_addr), size, errno);
+    os::warn_fail_reserve_memory(requested_addr, size, err);
     return nullptr;
   } else if (requested_addr != nullptr && addr != requested_addr) {
+    os::warn_attempt_reserve_successful_other_addr(requested_addr, addr, size);
     trcVerbose("mmap(" PTR_FORMAT ", " UINTX_FORMAT ", ..) succeeded, but at a different address than requested (" PTR_FORMAT "), will unmap",
                p2i(requested_addr), size, p2i(addr));
     ::munmap(addr, extra_size);
@@ -1760,7 +1774,9 @@ static bool release_mmaped_memory(char* addr, size_t size) {
   bool rc = false;
 
   if (::munmap(addr, size) != 0) {
+    int err = errno;
     trcVerbose("failed (%d)\n", errno);
+    os::warn_fail_release_memory(addr, size, err);
     rc = false;
   } else {
     trcVerbose("ok.");
@@ -1781,7 +1797,9 @@ static bool uncommit_mmaped_memory(char* addr, size_t size) {
 
   // Uncommit mmap memory with msync MS_INVALIDATE.
   if (::msync(addr, size, MS_INVALIDATE) != 0) {
+    int err = errno;
     trcVerbose("failed (%d)\n", errno);
+    os::warn_fail_uncommit_memory(addr, size, err);
     rc = false;
   } else {
     trcVerbose("ok.");
@@ -1792,7 +1810,7 @@ static bool uncommit_mmaped_memory(char* addr, size_t size) {
 }
 
 #ifdef PRODUCT
-static void warn_fail_commit_memory(char* addr, size_t size, bool exec,
+static void prod_warn_fail_commit_memory(char* addr, size_t size, bool exec,
                                     int err) {
   warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
           ", %d) failed; error='%s' (errno=%d)", p2i(addr), size, exec,
@@ -1805,7 +1823,9 @@ void os::pd_commit_memory_or_exit(char* addr, size_t size, bool exec,
   assert(mesg != nullptr, "mesg must be specified");
   if (!pd_commit_memory(addr, size, exec)) {
     // Add extra info in product mode for vm_exit_out_of_memory():
-    PRODUCT_ONLY(warn_fail_commit_memory(addr, size, exec, errno);)
+    int err = errno;
+    warn_fail_commit_memory(addr, size, err);
+    PRODUCT_ONLY(prod_warn_fail_commit_memory(addr, size, exec, errno);) // TODO - do we need this?
     vm_exit_out_of_memory(size, OOM_MMAP_ERROR, "%s", mesg);
   }
 }

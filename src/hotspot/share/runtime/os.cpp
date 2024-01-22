@@ -2255,6 +2255,38 @@ void os::naked_sleep(jlong millis) {
   naked_short_sleep(millis);
 }
 
+void os::warn_fail_reserve_memory(size_t bytes, int err) {
+  log_trace(os,map)("TRACE: os::reserve_memory(" SIZE_FORMAT ") failed; error=%s (errno=%d)",
+    bytes, os::strerror(err), err);
+}
+
+void os::warn_fail_attempt_reserve_memory_at(char* addr, size_t bytes, int err) {
+  log_trace(os,map)("TRACE: os::attempt_reserve_memory_at(" PTR_FORMAT ", " SIZE_FORMAT "), failed; error=%s (errno=%d)",
+    p2i(addr), bytes, os::strerror(err), err);
+}
+
+void os::warn_attempt_reserve_successful_other_addr(char* requested_addr, char* addr, size_t bytes) {
+  log_trace(os, map)("TRACE: os::attempt_reserve_memory_at(" PTR_FORMAT ", " SIZE_FORMAT "), Kernel rejected " PTR_FORMAT ", offered " PTR_FORMAT ".",
+     p2i(requested_addr), bytes, p2i(requested_addr), p2i(addr));
+}
+
+
+void os::warn_fail_commit_memory(char* addr, size_t bytes, int err) {
+  log_trace(os,map)("TRACE: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT ") failed; error=%s (errno=%d)",
+    p2i(addr), bytes, os::strerror(err), err);
+}
+
+void os::warn_fail_uncommit_memory(char* addr, size_t bytes, int err) {
+  log_trace(os,map)("TRACE: os::uncommit_memory(" PTR_FORMAT ", " SIZE_FORMAT ") failed; error = %s errno(%d)",
+    p2i(addr), bytes, os::strerror(err), err);
+}
+
+void os::warn_fail_release_memory(char* addr, size_t bytes, int err) {
+  log_trace(os,map)("TRACE: os::release_memory(" PTR_FORMAT ", " SIZE_FORMAT
+          ") failed; error='%s' (errno=%d)", p2i(addr), bytes,
+          os::strerror(err), err);
+}
+
 
 ////// Implementation of PageSizes
 
