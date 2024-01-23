@@ -1660,7 +1660,7 @@ static bool release_shmated_memory(char* addr, size_t size) {
   // TODO: is there a way to verify shm size without doing bookkeeping?
   if (::shmdt(addr) != 0) {
     ErrnoPreserver ep;
-    log_trace(os,map)("shmdt failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, addr + size - 1, size), errno);
+    log_trace(os,map)("shmdt failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
     trcVerbose("error (%d).", errno);
   } else {
     trcVerbose("ok.");
@@ -1791,7 +1791,7 @@ static bool release_mmaped_memory(char* addr, size_t size) {
 
   if (::munmap(addr, size) != 0) {
     ErrnoPreserver ep;
-    log_trace(os,map)("munmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, addr + size - 1, size), errno);
+    log_trace(os,map)("munmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
     trcVerbose("failed (%d)\n", errno);
     rc = false;
   } else {
@@ -1814,7 +1814,7 @@ static bool uncommit_mmaped_memory(char* addr, size_t size) {
   // Uncommit mmap memory with msync MS_INVALIDATE.
   if (::msync(addr, size, MS_INVALIDATE) != 0) {
     ErrnoPreserver ep;
-    log_trace(os,map)("msync failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, addr + size - 1, size), errno);
+    log_trace(os,map)("msync failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
     trcVerbose("failed (%d)\n", errno);
     rc = false;
   } else {
