@@ -1563,7 +1563,11 @@ bool os::pd_commit_memory(char* addr, size_t size, bool exec) {
 #if defined(__OpenBSD__)
   // XXX: Work-around mmap/MAP_FIXED bug temporarily on OpenBSD
   Events::log(nullptr, "Protecting memory [" INTPTR_FORMAT "," INTPTR_FORMAT "] with protection modes %x", p2i(addr), p2i(addr+size), prot);
-  if (::mprotect(addr, size, prot) == 0) {
+  int res = ::mprotect(addr, size, prot);
+  if (res != 0) {
+    ErrnoPreserver ep;
+    log_trace(os,map)("mprotect failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
+  } else {
     return true;
   }
 #elif defined(__APPLE__)
@@ -1673,8 +1677,9 @@ bool os::pd_uncommit_memory(char* addr, size_t size, bool exec) {
   if (res != 0) {
     ErrnoPreserver ep;
     log_trace(os,map)("mprotect failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
+    return false;
   }
-  return res == 0;
+  return true;
 #elif defined(__APPLE__)
   if (exec) {
     if (::madvise(addr, size, MADV_FREE) != 0) {
@@ -1686,8 +1691,9 @@ bool os::pd_uncommit_memory(char* addr, size_t size, bool exec) {
     if (res != 0) {
       ErrnoPreserver ep;
       log_trace(os,map)("mprotect failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
+      return false;
     }
-    return res == 0;
+    return true;
   } else {
     uintptr_t res = (uintptr_t) ::mmap(addr, size, PROT_NONE,
         MAP_PRIVATE|MAP_FIXED|MAP_NORESERVE|MAP_ANONYMOUS, -1, 0);
