@@ -2837,6 +2837,9 @@ int os::Linux::commit_memory_impl(char* addr, size_t size, bool exec) {
       numa_make_global(addr, size);
     }
     return 0;
+  } else {
+    ErrnoPreserver ep;
+    log_trace(os,map)("mmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(addr, size), errno);
   }
 
   int err = errno;  // save errno from mmap() call above
