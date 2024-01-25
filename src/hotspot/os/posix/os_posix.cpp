@@ -49,6 +49,7 @@
 #include "utilities/formatBuffer.hpp"
 #include "utilities/globalDefinitions.hpp"
 #include "utilities/macros.hpp"
+#include "utilities/preserveErrno.hpp"
 #include "utilities/vmError.hpp"
 #if INCLUDE_JFR
 #include "jfr/support/jfrNativeLibraryLoadEvent.hpp"
@@ -323,6 +324,8 @@ char* os::map_memory_to_file(char* base, size_t size, int fd) {
   char* addr = (char*)mmap(base, size, prot, flags, fd, 0);
 
   if (addr == MAP_FAILED) {
+    ErrnoPreserver ep;
+    log_trace(os,map)("mmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(base, size), errno);
     warning("Failed mmap to file. (%s)", os::strerror(errno));
     return nullptr;
   }
