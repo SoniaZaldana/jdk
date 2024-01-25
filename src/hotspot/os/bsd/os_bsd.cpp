@@ -1738,7 +1738,7 @@ static char* anon_mmap(char* requested_addr, size_t bytes, bool exec) {
   // touch an uncommitted page. Otherwise, the read/write might
   // succeed if we have enough swap space to back the physical page.
   char* addr = (char*)::mmap(requested_addr, bytes, PROT_NONE, flags, -1, 0);
-  if (addr == (uintptr_t) MAP_FAILED) {
+  if (addr == (char *) MAP_FAILED) {
     ErrnoPreserver ep;
     log_trace(os,map)("mmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(requested_addr, bytes), errno);
     return nullptr;
