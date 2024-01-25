@@ -1849,13 +1849,15 @@ char* os::pd_attempt_map_memory_to_file_at(char* requested_addr, size_t bytes, i
 // available (and not reserved for something else).
 
 char* os::pd_attempt_reserve_memory_at(char* requested_addr, size_t bytes, bool exec) {
-  log_trace(os,map)("Sonia it has to do with bsd " SIZE_FORMAT, bytes);
+  log_trace(os,map)("Sonia it has to do with bsd " SIZE_FORMAT " " SIZE_FORMAT, bytes, os::vm_page_size());
   // Assert only that the size is a multiple of the page size, since
   // that's all that mmap requires, and since that's all we really know
   // about at this low abstraction level.  If we need higher alignment,
   // we can either pass an alignment to this method or verify alignment
   // in one of the methods further up the call chain.  See bug 5044738.
   assert(bytes % os::vm_page_size() == 0, "reserving unexpected size block");
+
+  log_trace(os,map)("We passed the assert");
 
   // Bsd mmap allows caller to pass an address as hint; give it a try first,
   // if kernel honors the hint then we can return immediately.
