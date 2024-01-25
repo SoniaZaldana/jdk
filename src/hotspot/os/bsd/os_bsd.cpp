@@ -1738,11 +1738,12 @@ static char* anon_mmap(char* requested_addr, size_t bytes, bool exec) {
   // touch an uncommitted page. Otherwise, the read/write might
   // succeed if we have enough swap space to back the physical page.
   char* addr = (char*)::mmap(requested_addr, bytes, PROT_NONE, flags, -1, 0);
-  if (addr == (uintptr_t) MAP_FAILED) {
+  if (addr == MAP_FAILED) {
     ErrnoPreserver ep;
     log_trace(os,map)("mmap failed: " RANGEFMT " errno=(%d)", RANGEFMTARGS(requested_addr, bytes), errno);
     return nullptr;
   }
+  log_trace(os,map)("Sonia the address is " PTR_FORMAT, p2i(addr));
   return addr;
 }
 
@@ -1838,6 +1839,7 @@ char* os::pd_attempt_map_memory_to_file_at(char* requested_addr, size_t bytes, i
   assert(file_desc >= 0, "file_desc is not valid");
   char* result = pd_attempt_reserve_memory_at(requested_addr, bytes, !ExecMem);
   if (result != nullptr) {
+    log_trace(os,map)("Sonia impossibly, it's here");
     if (replace_existing_mapping_with_file_mapping(result, bytes, file_desc) == nullptr) {
       vm_exit_during_initialization(err_msg("Error in mapping Java heap at the given filesystem directory"));
     }
@@ -1849,15 +1851,12 @@ char* os::pd_attempt_map_memory_to_file_at(char* requested_addr, size_t bytes, i
 // available (and not reserved for something else).
 
 char* os::pd_attempt_reserve_memory_at(char* requested_addr, size_t bytes, bool exec) {
-  log_trace(os,map)("Sonia it has to do with bsd " SIZE_FORMAT " " SIZE_FORMAT, bytes, os::vm_page_size());
   // Assert only that the size is a multiple of the page size, since
   // that's all that mmap requires, and since that's all we really know
   // about at this low abstraction level.  If we need higher alignment,
   // we can either pass an alignment to this method or verify alignment
   // in one of the methods further up the call chain.  See bug 5044738.
   assert(bytes % os::vm_page_size() == 0, "reserving unexpected size block");
-
-  log_trace(os,map)("We passed the assert");
 
   // Bsd mmap allows caller to pass an address as hint; give it a try first,
   // if kernel honors the hint then we can return immediately.
