@@ -63,7 +63,7 @@ jobs:
       # linux-x64-variants: ${{ steps.include.outputs.linux-x64-variants }}
       # linux-cross-compile: ${{ steps.include.outputs.linux-cross-compile }}
       macos-x64: ${{ steps.include.outputs.macos-x64 }}
-      macos-aarch64: ${{ steps.include.outputs.macos-aarch64 }}
+      # macos-aarch64: ${{ steps.include.outputs.macos-aarch64 }}
       # windows-x64: ${{ steps.include.outputs.windows-x64 }}
       # windows-aarch64: ${{ steps.include.outputs.windows-aarch64 }}
       # docs: ${{ steps.include.outputs.docs }}

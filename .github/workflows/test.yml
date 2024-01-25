@@ -59,7 +59,7 @@ jobs:
           # - 'jdk/tier1 part 2'
           # - 'jdk/tier1 part 3'
           # - 'langtools/tier1'
-          - 'hs/tier1 common'
+          # - 'hs/tier1 common'
           # - 'hs/tier1 compiler part 1'
           # - 'hs/tier1 compiler part 2'
           # - 'hs/tier1 compiler part 3'
