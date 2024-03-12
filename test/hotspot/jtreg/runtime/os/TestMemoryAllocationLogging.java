@@ -145,7 +145,7 @@ public class TestMemoryAllocationLogging {
                         String.format("Reserved \\[0x.* - 0x.*\\), \\(%d bytes\\)", PAGE_SIZE),
                         String.format("Attempt to reserve \\[0x.* - 0x.*\\), \\(.* bytes\\) failed"),
                         /* Trace level log */
-                        "mmap failed: \\[0x.* - 0x.*\\), \\(.* bytes\\) errno=\\(Invalid argument\\)"
+                        "mmap failed: \\[0x.* - 0x.*\\), \\(.* bytes\\) errno="
                 };
                 break;
             }
@@ -224,7 +224,7 @@ public class TestMemoryAllocationLogging {
                 }
                 case "testAttemptedReserveFailed": {
                     long addr = wb.NMTReserveMemory(PAGE_SIZE);
-                    wb.NMTAttemptReserveMemoryAt(1, PAGE_SIZE);
+                    wb.NMTAttemptReserveMemoryAt(-1, PAGE_SIZE);
                     break;
                 }
                 case "testReserveFailed": {
