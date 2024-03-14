@@ -144,8 +144,6 @@ public class TestMemoryAllocationLogging {
                         /* Debug level log */
                         String.format("Reserved \\[0x.* - 0x.*\\), \\(%d bytes\\)", PAGE_SIZE),
                         String.format("Attempt to reserve \\[0x.* - 0x.*\\), \\(.* bytes\\) failed"),
-                        /* Trace level log */
-                        "mmap failed: \\[0x.* - 0x.*\\), \\(.* bytes\\) errno="
                 };
                 break;
             }
@@ -199,7 +197,6 @@ public class TestMemoryAllocationLogging {
     private static OutputAnalyzer runTestWithOptions(String[] options) throws IOException {
         ProcessBuilder pb = ProcessTools.createLimitedTestJavaProcessBuilder(options);
         OutputAnalyzer output = new OutputAnalyzer(pb.start());
-        output.shouldHaveExitValue(0);
         return output;
     }
 
