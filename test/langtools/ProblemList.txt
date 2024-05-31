@@ -77,3 +77,9 @@ tools/javap/output/RepeatingTypeAnnotations.java                                
 ###########################################################################
 #
 # jdeps
+
+###########################################################################
+#
+# hotspot
+
+serviceability/jvmti/ObjectMonitorUsage/ObjectMonitorUsage                      8333369    generic-all
