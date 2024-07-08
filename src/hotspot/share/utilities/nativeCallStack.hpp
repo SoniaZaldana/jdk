@@ -54,6 +54,12 @@
  */
 class MemTracker;
 
+typedef ResourceHashtable<const char *, // Function name
+                          const char *, // Source file name and line number
+                          307,          // prime number
+                          AnyObj::C_HEAP, mtNMT>
+    SourceInfoTable;
+
 class NativeCallStack : public StackObj {
 private:
   address       _stack[NMT_TrackingStackDepth];
@@ -124,10 +130,8 @@ public:
     return (unsigned int)hash;
   }
 
-  void print_frame(outputStream *out, address pc,
-                   ResourceHashtable<const char *, const char *, 307, AnyObj::C_HEAP,
-                                     mtNMT> *cache,
-                   Arena *source_info) const;
+  void print_frame(outputStream* out, address pc, SourceInfoTable* cache,
+                   Arena* source_info) const;
   void print_on(outputStream* out) const;
 };
 

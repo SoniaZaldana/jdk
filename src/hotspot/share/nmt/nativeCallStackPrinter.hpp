@@ -41,10 +41,9 @@ class NativeCallStackPrinter {
   // Cache-related data are mutable to be able to use NativeCallStackPrinter as
   // inline member in classes with const printing methods.
   mutable Arena _text_storage;
+  mutable ResourceHashtable<address, const char*, 293, AnyObj::C_HEAP, mtNMT> _cache;
   mutable Arena _source_storage;
-  mutable ResourceHashtable<address, const char *, 293, AnyObj::C_HEAP, mtNMT>
-      _cache;
-  mutable ResourceHashtable<const char *, const char *, 307, AnyObj::C_HEAP, mtNMT>
+  mutable ResourceHashtable<const char*, const char*, 307, AnyObj::C_HEAP, mtNMT>
       _source_cache;
   outputStream* const _out;
 public:

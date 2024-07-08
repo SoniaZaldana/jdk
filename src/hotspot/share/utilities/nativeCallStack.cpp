@@ -73,11 +73,8 @@ int NativeCallStack::frames() const {
 
 // Decode and print this call path
 
-void NativeCallStack::print_frame(
-    outputStream *out, address pc,
-    ResourceHashtable<const char *, const char *, 307, AnyObj::C_HEAP, mtNMT> *cache,
-    Arena *source_info)
-    const {
+void NativeCallStack::print_frame(outputStream* out, address pc, SourceInfoTable* cache,
+                                  Arena* source_info) const {
   char    buf[1024];
   int     offset;
   int     line;
@@ -89,11 +86,9 @@ void NativeCallStack::print_frame(
   if (os::dll_address_to_function_name(pc, buf, sizeof(buf), &offset)) {
     out->print("%s+0x%x", buf, offset);
     function_printed = true;
-
-    bool info_created = false;
-    const char **cached_source_info = cache->put_if_absent(buf, &info_created);
-    if (info_created) {
-      // out->print(" NCached SONIA: ");
+    bool created = false;
+    const char **cached_source_info = cache->put_if_absent(buf, &created);
+    if (created) {
       if (Decoder::get_source_info(pc, buf, sizeof(buf), &line, false)) {
         // For intra-vm functions, we omit the full path
         const char *s = buf;
@@ -101,18 +96,16 @@ void NativeCallStack::print_frame(
           s = strrchr(s, os::file_separator()[0]);
           s = (s != nullptr) ? s + 1 : buf;
         }
-        stringStream ss;
-        ss.print("%s", s);
-        const size_t len = ss.size();
-
+        stringStream source;
+        source.print("   (%s:%d)", s, line);
+        const size_t len = source.size();
         char *store = NEW_ARENA_ARRAY(source_info, char, len + 1);
-        memcpy(store, ss.base(), len + 1);
+        memcpy(store, source.base(), len + 1);
         (*cached_source_info) = store;
-        out->print("   (%s:%d)", *cached_source_info, line);
+        out->print("%s", *cached_source_info);
       }
     } else {
-      // out->print(" YCached SONIA: ");
-      out->print("   (%s:%d)", *cached_source_info, line);
+      out->print("%s", *cached_source_info);
     }
   }
   if ((!function_printed || !pc_in_VM) &&
