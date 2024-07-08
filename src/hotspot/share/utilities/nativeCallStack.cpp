@@ -124,6 +124,7 @@ void NativeCallStack::print_frame(outputStream* out, address pc, SourceInfoTable
 }
 
 void NativeCallStack::print_on(outputStream* out) const {
+  // TODO Sonia - deal with this. 
   // DEBUG_ONLY(assert_not_fake();)
   // for (int i = 0; i < NMT_TrackingStackDepth && _stack[i] != nullptr; i++) {
   //   print_frame(out, _stack[i]);

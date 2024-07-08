@@ -57,8 +57,7 @@ class MemTracker;
 typedef ResourceHashtable<const char *, // Function name
                           const char *, // Source file name and line number
                           307,          // prime number
-                          AnyObj::C_HEAP, mtNMT>
-    SourceInfoTable;
+                          AnyObj::C_HEAP, mtNMT> SourceInfoTable;
 
 class NativeCallStack : public StackObj {
 private:
