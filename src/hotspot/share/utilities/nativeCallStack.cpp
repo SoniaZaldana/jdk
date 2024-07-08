@@ -75,7 +75,7 @@ int NativeCallStack::frames() const {
 
 void NativeCallStack::print_frame(
     outputStream *out, address pc,
-    ResourceHashtable<address, const char *, 307, AnyObj::C_HEAP, mtNMT> *cache,
+    ResourceHashtable<const char *, const char *, 307, AnyObj::C_HEAP, mtNMT> *cache,
     Arena *source_info)
     const {
   char    buf[1024];
@@ -91,8 +91,9 @@ void NativeCallStack::print_frame(
     function_printed = true;
 
     bool info_created = false;
-    const char **cached_source_info = cache->put_if_absent(pc, &info_created);
+    const char **cached_source_info = cache->put_if_absent(buf, &info_created);
     if (info_created) {
+      // out->print(" NCached SONIA: ");
       if (Decoder::get_source_info(pc, buf, sizeof(buf), &line, false)) {
         // For intra-vm functions, we omit the full path
         const char *s = buf;
@@ -107,9 +108,12 @@ void NativeCallStack::print_frame(
         char *store = NEW_ARENA_ARRAY(source_info, char, len + 1);
         memcpy(store, ss.base(), len + 1);
         (*cached_source_info) = store;
+        out->print("   (%s:%d)", *cached_source_info, line);
       }
+    } else {
+      // out->print(" YCached SONIA: ");
+      out->print("   (%s:%d)", *cached_source_info, line);
     }
-    out->print("   (%s:%d)", *cached_source_info, line);
   }
   if ((!function_printed || !pc_in_VM) &&
       os::dll_address_to_library_name(pc, buf, sizeof(buf), &offset)) {
