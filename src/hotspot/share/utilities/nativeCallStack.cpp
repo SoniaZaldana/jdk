@@ -73,7 +73,11 @@ int NativeCallStack::frames() const {
 
 // Decode and print this call path
 
-void NativeCallStack::print_frame(outputStream* out, address pc) const {
+void NativeCallStack::print_frame(
+    outputStream *out, address pc,
+    ResourceHashtable<address, const char *, 307, AnyObj::C_HEAP, mtNMT> *cache,
+    Arena *source_info)
+    const {
   char    buf[1024];
   int     offset;
   int     line;
@@ -85,15 +89,27 @@ void NativeCallStack::print_frame(outputStream* out, address pc) const {
   if (os::dll_address_to_function_name(pc, buf, sizeof(buf), &offset)) {
     out->print("%s+0x%x", buf, offset);
     function_printed = true;
-    if (Decoder::get_source_info(pc, buf, sizeof(buf), &line, false)) {
-      // For intra-vm functions, we omit the full path
-      const char* s = buf;
-      if (pc_in_VM) {
-        s = strrchr(s, os::file_separator()[0]);
-        s = (s != nullptr) ? s + 1 : buf;
+
+    bool info_created = false;
+    const char **cached_source_info = cache->put_if_absent(pc, &info_created);
+    if (info_created) {
+      if (Decoder::get_source_info(pc, buf, sizeof(buf), &line, false)) {
+        // For intra-vm functions, we omit the full path
+        const char *s = buf;
+        if (pc_in_VM) {
+          s = strrchr(s, os::file_separator()[0]);
+          s = (s != nullptr) ? s + 1 : buf;
+        }
+        stringStream ss;
+        ss.print("%s", s);
+        const size_t len = ss.size();
+
+        char *store = NEW_ARENA_ARRAY(source_info, char, len + 1);
+        memcpy(store, ss.base(), len + 1);
+        (*cached_source_info) = store;
       }
-      out->print("   (%s:%d)", s, line);
     }
+    out->print("   (%s:%d)", *cached_source_info, line);
   }
   if ((!function_printed || !pc_in_VM) &&
       os::dll_address_to_library_name(pc, buf, sizeof(buf), &offset)) {
@@ -111,9 +127,9 @@ void NativeCallStack::print_frame(outputStream* out, address pc) const {
 }
 
 void NativeCallStack::print_on(outputStream* out) const {
-  DEBUG_ONLY(assert_not_fake();)
-  for (int i = 0; i < NMT_TrackingStackDepth && _stack[i] != nullptr; i++) {
-    print_frame(out, _stack[i]);
-  }
-  out->cr();
+  // DEBUG_ONLY(assert_not_fake();)
+  // for (int i = 0; i < NMT_TrackingStackDepth && _stack[i] != nullptr; i++) {
+  //   print_frame(out, _stack[i]);
+  // }
+  // out->cr();
 }

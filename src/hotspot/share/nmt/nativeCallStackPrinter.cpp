@@ -31,7 +31,8 @@
 #include "utilities/ostream.hpp"
 
 NativeCallStackPrinter::NativeCallStackPrinter(outputStream* out) :
-    _text_storage(mtNMT, Arena::Tag::tag_other, 128 * K), _out(out)
+    _text_storage(mtNMT, Arena::Tag::tag_other, 128 * K),
+    _source_storage(mtNMT, Arena::Tag::tag_other, 128 * K), _out(out)
 {}
 
 void NativeCallStackPrinter::print_stack(const NativeCallStack* stack) const {
@@ -44,7 +45,7 @@ void NativeCallStackPrinter::print_stack(const NativeCallStack* stack) const {
     const char** cached_frame_text = _cache.put_if_absent(pc, &created);
     if (created) {
       stringStream ss(4 * K);
-      stack->print_frame(&ss, pc);
+      stack->print_frame(&ss, pc, &_source_cache, &_source_storage);
       const size_t len = ss.size();
       char* store = NEW_ARENA_ARRAY(&_text_storage, char, len + 1);
       memcpy(store, ss.base(), len + 1);

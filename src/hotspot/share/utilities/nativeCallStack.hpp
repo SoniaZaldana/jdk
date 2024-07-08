@@ -124,7 +124,10 @@ public:
     return (unsigned int)hash;
   }
 
-  void print_frame(outputStream* out, address pc) const;
+  void print_frame(outputStream *out, address pc,
+                   ResourceHashtable<address, const char *, 307, AnyObj::C_HEAP,
+                                     mtNMT> *cache,
+                   Arena *source_info) const;
   void print_on(outputStream* out) const;
 };
 
