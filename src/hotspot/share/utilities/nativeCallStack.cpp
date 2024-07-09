@@ -87,8 +87,10 @@ void NativeCallStack::print_frame(outputStream* out, address pc, SourceInfoTable
     out->print("%s+0x%x", buf, offset);
     function_printed = true;
     bool created = false;
-    const char **cached_source_info = cache->put_if_absent(buf, &created);
-    if (created) {
+    const char **cached_source_info = cache->get(pc);
+    if (cached_source_info) {
+      out->print("YCACHED %s", *cached_source_info);
+    } else {
       if (Decoder::get_source_info(pc, buf, sizeof(buf), &line, false)) {
         // For intra-vm functions, we omit the full path
         const char *s = buf;
@@ -101,11 +103,9 @@ void NativeCallStack::print_frame(outputStream* out, address pc, SourceInfoTable
         const size_t len = source.size();
         char *store = NEW_ARENA_ARRAY(source_info, char, len + 1);
         memcpy(store, source.base(), len + 1);
-        (*cached_source_info) = store;
-        out->print("%s", *cached_source_info);
+        cache->put(pc, store);
+        out->print("NCACHED %s", *cache->get(pc));
       }
-    } else {
-      out->print("%s", *cached_source_info);
     }
   }
   if ((!function_printed || !pc_in_VM) &&
@@ -124,7 +124,7 @@ void NativeCallStack::print_frame(outputStream* out, address pc, SourceInfoTable
 }
 
 void NativeCallStack::print_on(outputStream* out) const {
-  // TODO Sonia - deal with this. 
+  // TODO Sonia - deal with this.
   // DEBUG_ONLY(assert_not_fake();)
   // for (int i = 0; i < NMT_TrackingStackDepth && _stack[i] != nullptr; i++) {
   //   print_frame(out, _stack[i]);

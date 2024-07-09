@@ -54,7 +54,7 @@
  */
 class MemTracker;
 
-typedef ResourceHashtable<const char *, // Function name
+typedef ResourceHashtable<address, // address
                           const char *, // Source file name and line number
                           307,          // prime number
                           AnyObj::C_HEAP, mtNMT> SourceInfoTable;
