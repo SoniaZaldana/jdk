@@ -565,6 +565,9 @@ tier1_serviceability = \
   -serviceability/sa/TestJmapCore.java \
   -serviceability/sa/TestJmapCoreMetaspace.java
 
+metaspace = \
+  runtime/Metaspace
+
 tier1 = \
   :tier1_common \
   :tier1_compiler \
