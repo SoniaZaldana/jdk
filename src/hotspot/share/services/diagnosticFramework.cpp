@@ -148,7 +148,7 @@ bool DCmdInfo::name_equals(const char* name) const {
   return strcmp(name, this->name()) == 0;
 }
 
-void DCmdParser::add_dcmd_option(GenDCmdArgument* arg) {
+void DCmdParser::add_dcmd_option(GenDCmdArgument* arg, outputStream* out) {
   assert(arg != nullptr, "Sanity");
   if (_options == nullptr) {
     _options = arg;
@@ -161,13 +161,13 @@ void DCmdParser::add_dcmd_option(GenDCmdArgument* arg) {
   }
   arg->set_next(nullptr);
   JavaThread* THREAD = JavaThread::current(); // For exception macros.
-  arg->init_value(THREAD);
+  arg->init_value(out, THREAD);
   if (HAS_PENDING_EXCEPTION) {
     fatal("Initialization must be successful");
   }
 }
 
-void DCmdParser::add_dcmd_argument(GenDCmdArgument* arg) {
+void DCmdParser::add_dcmd_argument(GenDCmdArgument* arg, outputStream* out) {
   assert(arg != nullptr, "Sanity");
   if (_arguments_list == nullptr) {
     _arguments_list = arg;
@@ -180,13 +180,13 @@ void DCmdParser::add_dcmd_argument(GenDCmdArgument* arg) {
   }
   arg->set_next(nullptr);
   JavaThread* THREAD = JavaThread::current(); // For exception macros.
-  arg->init_value(THREAD);
+  arg->init_value(out, THREAD);
   if (HAS_PENDING_EXCEPTION) {
     fatal("Initialization must be successful");
   }
 }
 
-void DCmdParser::parse(CmdLine* line, char delim, TRAPS) {
+void DCmdParser::parse(CmdLine* line, char delim, outputStream* out, TRAPS) {
   GenDCmdArgument* next_argument = _arguments_list;
   DCmdArgIter iter(line->args_addr(), line->args_len(), delim);
   bool cont = iter.next(CHECK);
@@ -194,11 +194,11 @@ void DCmdParser::parse(CmdLine* line, char delim, TRAPS) {
     GenDCmdArgument* arg = lookup_dcmd_option(iter.key_addr(),
             iter.key_length());
     if (arg != nullptr) {
-      arg->read_value(iter.value_addr(), iter.value_length(), CHECK);
+      arg->read_value(iter.value_addr(), iter.value_length(), out, CHECK);
     } else {
       if (next_argument != nullptr) {
         arg = next_argument;
-        arg->read_value(iter.key_addr(), iter.key_length(), CHECK);
+        arg->read_value(iter.key_addr(), iter.key_length(), out, CHECK);
         next_argument = next_argument->next();
       } else {
         const size_t buflen    = 120;
@@ -298,15 +298,15 @@ void DCmdParser::print_help(outputStream* out, const char* cmd_name) const {
   }
 }
 
-void DCmdParser::reset(TRAPS) {
+void DCmdParser::reset(outputStream* out, TRAPS) {
   GenDCmdArgument* arg = _arguments_list;
   while (arg != nullptr) {
-    arg->reset(CHECK);
+    arg->reset(out, CHECK);
     arg = arg->next();
   }
   arg = _options;
   while (arg != nullptr) {
-    arg->reset(CHECK);
+    arg->reset(out, CHECK);
     arg = arg->next();
   }
 }
@@ -439,7 +439,7 @@ bool DCmd::reorder_help_cmd(CmdLine line, stringStream &updated_line) {
 }
 
 void DCmdWithParser::parse(CmdLine* line, char delim, TRAPS) {
-  _dcmdparser.parse(line, delim, CHECK);
+  _dcmdparser.parse(line, delim, output(), CHECK);
 }
 
 void DCmdWithParser::print_help(const char* name) const {
@@ -447,7 +447,7 @@ void DCmdWithParser::print_help(const char* name) const {
 }
 
 void DCmdWithParser::reset(TRAPS) {
-  _dcmdparser.reset(CHECK);
+  _dcmdparser.reset(output(), CHECK);
 }
 
 void DCmdWithParser::cleanup() {

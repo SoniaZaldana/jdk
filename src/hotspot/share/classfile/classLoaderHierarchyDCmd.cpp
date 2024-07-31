@@ -40,9 +40,9 @@ ClassLoaderHierarchyDCmd::ClassLoaderHierarchyDCmd(outputStream* output, bool he
    _show_classes("show-classes", "Print loaded classes.", "BOOLEAN", false, "false"),
   _verbose("verbose", "Print detailed information.", "BOOLEAN", false, "false"),
   _fold("fold", "Show loaders of the same name and class as one.", "BOOLEAN", false, "true") {
-  _dcmdparser.add_dcmd_option(&_show_classes);
-  _dcmdparser.add_dcmd_option(&_verbose);
-  _dcmdparser.add_dcmd_option(&_fold);
+  _dcmdparser.add_dcmd_option(&_show_classes, output);
+  _dcmdparser.add_dcmd_option(&_verbose, output);
+  _dcmdparser.add_dcmd_option(&_fold, output);
 }
 
 // Helper class for drawing the branches to the left of a node.

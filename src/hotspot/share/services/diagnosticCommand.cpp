@@ -174,8 +174,8 @@ HelpDCmd::HelpDCmd(outputStream* output, bool heap) : DCmdWithParser(output, hea
   _all("-all", "Show help for all commands", "BOOLEAN", false, "false"),
   _cmd("command name", "The name of the command for which we want help",
         "STRING", false) {
-  _dcmdparser.add_dcmd_option(&_all);
-  _dcmdparser.add_dcmd_argument(&_cmd);
+  _dcmdparser.add_dcmd_option(&_all, output);
+  _dcmdparser.add_dcmd_argument(&_cmd, output);
 };
 
 
@@ -246,7 +246,7 @@ void VersionDCmd::execute(DCmdSource source, TRAPS) {
 PrintVMFlagsDCmd::PrintVMFlagsDCmd(outputStream* output, bool heap) :
                                    DCmdWithParser(output, heap),
   _all("-all", "Print all flags supported by the VM", "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_all);
+  _dcmdparser.add_dcmd_option(&_all, output);
 }
 
 void PrintVMFlagsDCmd::execute(DCmdSource source, TRAPS) {
@@ -262,8 +262,8 @@ SetVMFlagDCmd::SetVMFlagDCmd(outputStream* output, bool heap) :
   _flag("flag name", "The name of the flag we want to set",
         "STRING", true),
   _value("string value", "The value we want to set", "STRING", false) {
-  _dcmdparser.add_dcmd_argument(&_flag);
-  _dcmdparser.add_dcmd_argument(&_value);
+  _dcmdparser.add_dcmd_argument(&_flag, output);
+  _dcmdparser.add_dcmd_argument(&_value, output);
 }
 
 void SetVMFlagDCmd::execute(DCmdSource source, TRAPS) {
@@ -293,8 +293,8 @@ JVMTIAgentLoadDCmd::JVMTIAgentLoadDCmd(outputStream* output, bool heap) :
   _libpath("library path", "Absolute path of the JVMTI agent to load.",
            "STRING", true),
   _option("agent option", "Option string to pass the agent.", "STRING", false) {
-  _dcmdparser.add_dcmd_argument(&_libpath);
-  _dcmdparser.add_dcmd_argument(&_option);
+  _dcmdparser.add_dcmd_argument(&_libpath, output);
+  _dcmdparser.add_dcmd_argument(&_option, output);
 }
 
 void JVMTIAgentLoadDCmd::execute(DCmdSource source, TRAPS) {
@@ -385,7 +385,7 @@ void PrintSystemPropertiesDCmd::execute(DCmdSource source, TRAPS) {
 VMUptimeDCmd::VMUptimeDCmd(outputStream* output, bool heap) :
                            DCmdWithParser(output, heap),
   _date("-date", "Add a prefix with current date", "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_date);
+  _dcmdparser.add_dcmd_option(&_date, output);
 }
 
 void VMUptimeDCmd::execute(DCmdSource source, TRAPS) {
@@ -484,11 +484,11 @@ HeapDumpDCmd::HeapDumpDCmd(outputStream* output, bool heap) :
   _parallel("-parallel", "Number of parallel threads to use for heap dump. The VM "
                           "will try to use the specified number of threads, but might use fewer.",
             "INT", false, "1") {
-  _dcmdparser.add_dcmd_option(&_all);
-  _dcmdparser.add_dcmd_argument(&_filename);
-  _dcmdparser.add_dcmd_option(&_gzip);
-  _dcmdparser.add_dcmd_option(&_overwrite);
-  _dcmdparser.add_dcmd_option(&_parallel);
+  _dcmdparser.add_dcmd_option(&_all, output);
+  _dcmdparser.add_dcmd_argument(&_filename, output);
+  _dcmdparser.add_dcmd_option(&_gzip, output);
+  _dcmdparser.add_dcmd_option(&_overwrite, output);
+  _dcmdparser.add_dcmd_option(&_parallel, output);
 }
 
 void HeapDumpDCmd::execute(DCmdSource source, TRAPS) {
@@ -534,8 +534,8 @@ ClassHistogramDCmd::ClassHistogramDCmd(outputStream* output, bool heap) :
        "For any other value the VM will try to use the specified number of "
        "threads, but might use fewer.",
        "INT", false, "0") {
-  _dcmdparser.add_dcmd_option(&_all);
-  _dcmdparser.add_dcmd_option(&_parallel_thread_num);
+  _dcmdparser.add_dcmd_option(&_all, output);
+  _dcmdparser.add_dcmd_option(&_parallel_thread_num, output);
 }
 
 void ClassHistogramDCmd::execute(DCmdSource source, TRAPS) {
@@ -559,8 +559,8 @@ ThreadDumpDCmd::ThreadDumpDCmd(outputStream* output, bool heap) :
                                DCmdWithParser(output, heap),
   _locks("-l", "print java.util.concurrent locks", "BOOLEAN", false, "false"),
   _extended("-e", "print extended thread information", "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_locks);
-  _dcmdparser.add_dcmd_option(&_extended);
+  _dcmdparser.add_dcmd_option(&_locks, output);
+  _dcmdparser.add_dcmd_option(&_extended, output);
 }
 
 void ThreadDumpDCmd::execute(DCmdSource source, TRAPS) {
@@ -665,27 +665,27 @@ JMXStartRemoteDCmd::JMXStartRemoteDCmd(outputStream *output, bool heap_allocated
    "set com.sun.management.jdp.name", "STRING", false)
 
   {
-    _dcmdparser.add_dcmd_option(&_config_file);
-    _dcmdparser.add_dcmd_option(&_jmxremote_host);
-    _dcmdparser.add_dcmd_option(&_jmxremote_port);
-    _dcmdparser.add_dcmd_option(&_jmxremote_rmi_port);
-    _dcmdparser.add_dcmd_option(&_jmxremote_ssl);
-    _dcmdparser.add_dcmd_option(&_jmxremote_registry_ssl);
-    _dcmdparser.add_dcmd_option(&_jmxremote_authenticate);
-    _dcmdparser.add_dcmd_option(&_jmxremote_password_file);
-    _dcmdparser.add_dcmd_option(&_jmxremote_access_file);
-    _dcmdparser.add_dcmd_option(&_jmxremote_login_config);
-    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_enabled_cipher_suites);
-    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_enabled_protocols);
-    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_need_client_auth);
-    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_config_file);
-    _dcmdparser.add_dcmd_option(&_jmxremote_autodiscovery);
-    _dcmdparser.add_dcmd_option(&_jdp_port);
-    _dcmdparser.add_dcmd_option(&_jdp_address);
-    _dcmdparser.add_dcmd_option(&_jdp_source_addr);
-    _dcmdparser.add_dcmd_option(&_jdp_ttl);
-    _dcmdparser.add_dcmd_option(&_jdp_pause);
-    _dcmdparser.add_dcmd_option(&_jdp_name);
+    _dcmdparser.add_dcmd_option(&_config_file, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_host, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_port, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_rmi_port, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_ssl, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_registry_ssl, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_authenticate, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_password_file, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_access_file, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_login_config, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_enabled_cipher_suites, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_enabled_protocols, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_need_client_auth, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_ssl_config_file, output);
+    _dcmdparser.add_dcmd_option(&_jmxremote_autodiscovery, output);
+    _dcmdparser.add_dcmd_option(&_jdp_port, output);
+    _dcmdparser.add_dcmd_option(&_jdp_address, output);
+    _dcmdparser.add_dcmd_option(&_jdp_source_addr, output);
+    _dcmdparser.add_dcmd_option(&_jdp_ttl, output);
+    _dcmdparser.add_dcmd_option(&_jdp_pause, output);
+    _dcmdparser.add_dcmd_option(&_jdp_name, output);
 }
 
 void JMXStartRemoteDCmd::execute(DCmdSource source, TRAPS) {
@@ -856,7 +856,7 @@ PerfMapDCmd::PerfMapDCmd(outputStream* output, bool heap) :
              DCmdWithParser(output, heap),
   _filename("filename", "Name of the map file", "FILE", false, DEFAULT_PERFMAP_FILENAME)
 {
-  _dcmdparser.add_dcmd_argument(&_filename);
+  _dcmdparser.add_dcmd_argument(&_filename, output);
 }
 
 void PerfMapDCmd::execute(DCmdSource source, TRAPS) {
@@ -869,8 +869,8 @@ CodeHeapAnalyticsDCmd::CodeHeapAnalyticsDCmd(outputStream* output, bool heap) :
                                              DCmdWithParser(output, heap),
   _function("function", "Function to be performed (aggregate, UsedSpace, FreeSpace, MethodCount, MethodSpace, MethodAge, MethodNames, discard", "STRING", false, "all"),
   _granularity("granularity", "Detail level - smaller value -> more detail", "INT", false, "4096") {
-  _dcmdparser.add_dcmd_argument(&_function);
-  _dcmdparser.add_dcmd_argument(&_granularity);
+  _dcmdparser.add_dcmd_argument(&_function, output);
+  _dcmdparser.add_dcmd_argument(&_granularity, output);
 }
 
 void CodeHeapAnalyticsDCmd::execute(DCmdSource source, TRAPS) {
@@ -890,8 +890,8 @@ EventLogDCmd::EventLogDCmd(outputStream* output, bool heap) :
   _log("log", "Name of log to be printed. If omitted, all logs are printed.", "STRING", false, nullptr),
   _max("max", "Maximum number of events to be printed (newest first). If omitted, all events are printed.", "STRING", false, nullptr)
 {
-  _dcmdparser.add_dcmd_option(&_log);
-  _dcmdparser.add_dcmd_option(&_max);
+  _dcmdparser.add_dcmd_option(&_log, output);
+  _dcmdparser.add_dcmd_option(&_max, output);
 }
 
 void EventLogDCmd::execute(DCmdSource source, TRAPS) {
@@ -920,7 +920,7 @@ void CompilerDirectivesPrintDCmd::execute(DCmdSource source, TRAPS) {
 CompilerDirectivesAddDCmd::CompilerDirectivesAddDCmd(outputStream* output, bool heap) :
                            DCmdWithParser(output, heap),
   _filename("filename","Name of the directives file", "STRING",true) {
-  _dcmdparser.add_dcmd_argument(&_filename);
+  _dcmdparser.add_dcmd_argument(&_filename, output);
 }
 
 void CompilerDirectivesAddDCmd::execute(DCmdSource source, TRAPS) {
@@ -944,9 +944,9 @@ ClassHierarchyDCmd::ClassHierarchyDCmd(outputStream* output, bool heap) :
   _classname("classname", "Name of class whose hierarchy should be printed. "
              "If not specified, all class hierarchies are printed.",
              "STRING", false) {
-  _dcmdparser.add_dcmd_option(&_print_interfaces);
-  _dcmdparser.add_dcmd_option(&_print_subclasses);
-  _dcmdparser.add_dcmd_argument(&_classname);
+  _dcmdparser.add_dcmd_option(&_print_interfaces, output);
+  _dcmdparser.add_dcmd_option(&_print_subclasses, output);
+  _dcmdparser.add_dcmd_argument(&_classname, output);
 }
 
 void ClassHierarchyDCmd::execute(DCmdSource source, TRAPS) {
@@ -968,7 +968,7 @@ ClassesDCmd::ClassesDCmd(outputStream* output, bool heap) :
            "R = has been redefined, "
            "S = is shared class",
            "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_verbose);
+  _dcmdparser.add_dcmd_option(&_verbose, output);
 }
 
 class VM_PrintClasses : public VM_Operation {
@@ -1000,8 +1000,8 @@ DumpSharedArchiveDCmd::DumpSharedArchiveDCmd(outputStream* output, bool heap) :
   _filename("filename", "Name of shared archive to be dumped", "FILE", false,
             DEFAULT_CDS_ARCHIVE_FILENAME)
 {
-  _dcmdparser.add_dcmd_argument(&_suboption);
-  _dcmdparser.add_dcmd_argument(&_filename);
+  _dcmdparser.add_dcmd_argument(&_suboption, output);
+  _dcmdparser.add_dcmd_argument(&_filename, output);
 }
 
 void DumpSharedArchiveDCmd::execute(DCmdSource source, TRAPS) {
@@ -1101,9 +1101,9 @@ ThreadDumpToFileDCmd::ThreadDumpToFileDCmd(outputStream* output, bool heap) :
   _overwrite("-overwrite", "May overwrite existing file", "BOOLEAN", false, "false"),
   _format("-format", "Output format (\"plain\" or \"json\")", "STRING", false, "plain"),
   _filepath("filepath", "The file path to the output file", "FILE", true) {
-  _dcmdparser.add_dcmd_option(&_overwrite);
-  _dcmdparser.add_dcmd_option(&_format);
-  _dcmdparser.add_dcmd_argument(&_filepath);
+  _dcmdparser.add_dcmd_option(&_overwrite, output);
+  _dcmdparser.add_dcmd_option(&_format, output);
+  _dcmdparser.add_dcmd_argument(&_filepath, output);
 }
 
 void ThreadDumpToFileDCmd::execute(DCmdSource source, TRAPS) {
@@ -1163,8 +1163,8 @@ CompilationMemoryStatisticDCmd::CompilationMemoryStatisticDCmd(outputStream* out
     DCmdWithParser(output, heap),
   _human_readable("-H", "Human readable format", "BOOLEAN", false, "false"),
   _minsize("-s", "Minimum memory size", "MEMORY SIZE", false, "0") {
-  _dcmdparser.add_dcmd_option(&_human_readable);
-  _dcmdparser.add_dcmd_option(&_minsize);
+  _dcmdparser.add_dcmd_option(&_human_readable, output);
+  _dcmdparser.add_dcmd_option(&_minsize, output);
 }
 
 void CompilationMemoryStatisticDCmd::execute(DCmdSource source, TRAPS) {
@@ -1186,7 +1186,7 @@ static constexpr char default_filename[] = "vm_memory_map_%p.txt";
 SystemDumpMapDCmd::SystemDumpMapDCmd(outputStream* output, bool heap) :
   DCmdWithParser(output, heap),
   _filename("-F", "file path", "FILE", false, default_filename) {
-  _dcmdparser.add_dcmd_option(&_filename);
+  _dcmdparser.add_dcmd_option(&_filename, output);
 }
 
 void SystemDumpMapDCmd::execute(DCmdSource source, TRAPS) {

@@ -2429,7 +2429,7 @@ SystemDictionaryDCmd::SystemDictionaryDCmd(outputStream* output, bool heap) :
                                  DCmdWithParser(output, heap),
   _verbose("-verbose", "Dump the content of each dictionary entry for all class loaders",
            "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_verbose);
+  _dcmdparser.add_dcmd_option(&_verbose, output);
 }
 
 void SystemDictionaryDCmd::execute(DCmdSource source, TRAPS) {

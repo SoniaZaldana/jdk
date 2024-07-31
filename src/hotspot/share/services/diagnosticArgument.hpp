@@ -86,10 +86,10 @@ public:
   bool is_mandatory() const       { return _is_mandatory; }
   bool has_value() const          { return _is_set || _default_string != nullptr; }
   bool has_default() const        { return _default_string != nullptr; }
-  void read_value(const char* str, size_t len, TRAPS);
-  virtual void parse_value(const char* str, size_t len, TRAPS) = 0;
-  virtual void init_value(TRAPS) = 0;
-  virtual void reset(TRAPS) = 0;
+  void read_value(const char* str, size_t len, outputStream* out, TRAPS);
+  virtual void parse_value(const char* str, size_t len, outputStream* out, TRAPS) = 0;
+  virtual void init_value(outputStream* out, TRAPS) = 0;
+  virtual void reset(outputStream * out, TRAPS) = 0;
   virtual void cleanup() = 0;
   virtual void value_as_str(char* buf, size_t len) const = 0;
   void set_next(GenDCmdArgument* arg) {
@@ -121,16 +121,16 @@ public:
   ~DCmdArgument() { destroy_value(); }
   ArgType value() const { return _value;}
   void set_value(ArgType v) { _value = v; }
-  void reset(TRAPS) {
+  void reset(outputStream* out, TRAPS) {
     destroy_value();
-    init_value(CHECK);
+    init_value(out, CHECK);
     _is_set = false;
   }
   void cleanup() {
     destroy_value();
   }
-  void parse_value(const char* str, size_t len, TRAPS);
-  void init_value(TRAPS);
+  void parse_value(const char* str, size_t len, outputStream* out, TRAPS);
+  void init_value(outputStream* out, TRAPS);
   void destroy_value();
   void value_as_str(char *buf, size_t len) const { to_string(_value, buf, len);}
 };

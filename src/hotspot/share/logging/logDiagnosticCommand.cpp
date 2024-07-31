@@ -36,13 +36,13 @@ LogDiagnosticCommand::LogDiagnosticCommand(outputStream* output, bool heap_alloc
     _disable("disable", "Turns off all logging and clears the log configuration.", "BOOLEAN", false),
     _list("list", "Lists current log configuration.", "BOOLEAN", false),
     _rotate("rotate", "Rotates all logs.", "BOOLEAN", false) {
-  _dcmdparser.add_dcmd_option(&_output);
-  _dcmdparser.add_dcmd_option(&_output_options);
-  _dcmdparser.add_dcmd_option(&_what);
-  _dcmdparser.add_dcmd_option(&_decorators);
-  _dcmdparser.add_dcmd_option(&_disable);
-  _dcmdparser.add_dcmd_option(&_list);
-  _dcmdparser.add_dcmd_option(&_rotate);
+  _dcmdparser.add_dcmd_option(&_output, output);
+  _dcmdparser.add_dcmd_option(&_output_options, output);
+  _dcmdparser.add_dcmd_option(&_what, output);
+  _dcmdparser.add_dcmd_option(&_decorators, output);
+  _dcmdparser.add_dcmd_option(&_disable, output);
+  _dcmdparser.add_dcmd_option(&_list, output);
+  _dcmdparser.add_dcmd_option(&_rotate, output);
 }
 
 void LogDiagnosticCommand::registerCommand() {

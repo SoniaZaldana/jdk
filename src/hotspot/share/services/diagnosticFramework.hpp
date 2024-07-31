@@ -207,14 +207,14 @@ private:
 public:
   DCmdParser()
     : _options(nullptr), _arguments_list(nullptr) {}
-  void add_dcmd_option(GenDCmdArgument* arg);
-  void add_dcmd_argument(GenDCmdArgument* arg);
+  void add_dcmd_option(GenDCmdArgument* arg, outputStream* out);
+  void add_dcmd_argument(GenDCmdArgument* arg, outputStream* out);
   GenDCmdArgument* lookup_dcmd_option(const char* name, size_t len);
   GenDCmdArgument* arguments_list() const { return _arguments_list; };
   void check(TRAPS);
-  void parse(CmdLine* line, char delim, TRAPS);
+  void parse(CmdLine* line, char delim, outputStream* out, TRAPS);
   void print_help(outputStream* out, const char* cmd_name) const;
-  void reset(TRAPS);
+  void reset(outputStream* out, TRAPS);
   void cleanup();
   int num_arguments() const;
   GrowableArray<const char*>* argument_name_array() const;

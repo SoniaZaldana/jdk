@@ -961,7 +961,7 @@ SymboltableDCmd::SymboltableDCmd(outputStream* output, bool heap) :
                                  DCmdWithParser(output, heap),
   _verbose("-verbose", "Dump the content of each symbol in the table",
            "BOOLEAN", false, "false") {
-  _dcmdparser.add_dcmd_option(&_verbose);
+  _dcmdparser.add_dcmd_option(&_verbose, output);
 }
 
 void SymboltableDCmd::execute(DCmdSource source, TRAPS) {

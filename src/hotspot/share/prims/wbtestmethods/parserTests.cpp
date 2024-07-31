@@ -78,62 +78,62 @@ static void fill_in_parser(DCmdParser* parser, oop argument)
      name, desc,
      "STRING", mandatory, default_value);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "NANOTIME") == 0) {
      DCmdArgument<NanoTimeArgument>* argument = new DCmdArgument<NanoTimeArgument>(
      name, desc,
      "NANOTIME", mandatory, default_value);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "JLONG") == 0) {
      DCmdArgument<jlong>* argument = new DCmdArgument<jlong>(
      name, desc,
      "JLONG", mandatory, default_value);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "BOOLEAN") == 0) {
      DCmdArgument<bool>* argument = new DCmdArgument<bool>(
      name, desc,
      "BOOLEAN", mandatory, default_value);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "MEMORYSIZE") == 0) {
      DCmdArgument<MemorySizeArgument>* argument = new DCmdArgument<MemorySizeArgument>(
      name, desc,
      "MEMORY SIZE", mandatory, default_value);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "STRINGARRAY") == 0) {
      DCmdArgument<StringArrayArgument*>* argument = new DCmdArgument<StringArrayArgument*>(
      name, desc,
      "STRING SET", mandatory);
      if (isarg) {
-      parser->add_dcmd_argument(argument);
+      parser->add_dcmd_argument(argument, tty);
      } else {
-      parser->add_dcmd_option(argument);
+      parser->add_dcmd_option(argument, tty);
      }
    } else if (strcmp(type, "FILE") == 0) {
       DCmdArgument<char*>* argument =
           new DCmdArgument<char*>(name, desc, "FILE", mandatory);
       if (isarg) {
-        parser->add_dcmd_argument(argument);
+        parser->add_dcmd_argument(argument, tty);
       } else {
-        parser->add_dcmd_option(argument);
+        parser->add_dcmd_option(argument, tty);
       }
    }
 }
@@ -161,7 +161,7 @@ WB_ENTRY(jobjectArray, WB_ParseCommandLine(JNIEnv* env, jobject o, jstring j_cmd
   }
 
   CmdLine cmdline(c_cmdline, strlen(c_cmdline), true);
-  parser.parse(&cmdline,c_delim,CHECK_NULL);
+  parser.parse(&cmdline,c_delim,tty,CHECK_NULL);
 
   Klass* k = vmClasses::Object_klass();
   objArrayOop returnvalue_array = oopFactory::new_objArray(k, parser.num_arguments() * 2, CHECK_NULL);

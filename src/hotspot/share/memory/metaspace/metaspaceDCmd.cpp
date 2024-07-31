@@ -48,14 +48,14 @@ MetaspaceDCmd::MetaspaceDCmd(outputStream* output, bool heap) :
          "STRING", false, "dynamic"),
   _show_classes("show-classes", "If show-loaders is set, shows loaded classes for each loader.", "BOOLEAN", false, "false")
 {
-  _dcmdparser.add_dcmd_option(&_basic);
-  _dcmdparser.add_dcmd_option(&_show_loaders);
-  _dcmdparser.add_dcmd_option(&_show_classes);
-  _dcmdparser.add_dcmd_option(&_by_chunktype);
-  _dcmdparser.add_dcmd_option(&_by_spacetype);
-  _dcmdparser.add_dcmd_option(&_show_vslist);
-  _dcmdparser.add_dcmd_option(&_show_chunkfreelist);
-  _dcmdparser.add_dcmd_option(&_scale);
+  _dcmdparser.add_dcmd_option(&_basic, output);
+  _dcmdparser.add_dcmd_option(&_show_loaders, output);
+  _dcmdparser.add_dcmd_option(&_show_classes, output);
+  _dcmdparser.add_dcmd_option(&_by_chunktype, output);
+  _dcmdparser.add_dcmd_option(&_by_spacetype, output);
+  _dcmdparser.add_dcmd_option(&_show_vslist, output);
+  _dcmdparser.add_dcmd_option(&_show_chunkfreelist, output);
+  _dcmdparser.add_dcmd_option(&_scale, output);
 }
 
 void MetaspaceDCmd::execute(DCmdSource source, TRAPS) {

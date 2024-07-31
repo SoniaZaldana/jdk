@@ -389,16 +389,16 @@ JfrConfigureFlightRecorderDCmd::JfrConfigureFlightRecorderDCmd(outputStream* out
   _sample_threads("samplethreads", "Activate thread sampling", "BOOLEAN", false, "true"),
   _preserve_repository("preserve-repository", "Preserve the disk repository after JVM exit", "BOOLEAN", false, "false"),
   _verbose(true) {
-  _dcmdparser.add_dcmd_option(&_repository_path);
-  _dcmdparser.add_dcmd_option(&_dump_path);
-  _dcmdparser.add_dcmd_option(&_stack_depth);
-  _dcmdparser.add_dcmd_option(&_global_buffer_count);
-  _dcmdparser.add_dcmd_option(&_global_buffer_size);
-  _dcmdparser.add_dcmd_option(&_thread_buffer_size);
-  _dcmdparser.add_dcmd_option(&_memory_size);
-  _dcmdparser.add_dcmd_option(&_max_chunk_size);
-  _dcmdparser.add_dcmd_option(&_sample_threads);
-  _dcmdparser.add_dcmd_option(&_preserve_repository);
+  _dcmdparser.add_dcmd_option(&_repository_path, output);
+  _dcmdparser.add_dcmd_option(&_dump_path, output);
+  _dcmdparser.add_dcmd_option(&_stack_depth, output);
+  _dcmdparser.add_dcmd_option(&_global_buffer_count, output);
+  _dcmdparser.add_dcmd_option(&_global_buffer_size, output);
+  _dcmdparser.add_dcmd_option(&_thread_buffer_size, output);
+  _dcmdparser.add_dcmd_option(&_memory_size, output);
+  _dcmdparser.add_dcmd_option(&_max_chunk_size, output);
+  _dcmdparser.add_dcmd_option(&_sample_threads, output);
+  _dcmdparser.add_dcmd_option(&_preserve_repository, output);
 };
 
 void JfrConfigureFlightRecorderDCmd::print_help(const char* name) const {

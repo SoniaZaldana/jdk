@@ -51,7 +51,7 @@ void StringArrayArgument::add(const char* str, size_t len) {
   }
 }
 
-void GenDCmdArgument::read_value(const char* str, size_t len, TRAPS) {
+void GenDCmdArgument::read_value(const char* str, size_t len, outputStream* out, TRAPS) {
   /* NOTE:Some argument types doesn't require a value,
    * for instance boolean arguments: "enableFeatureX". is
    * equivalent to "enableFeatureX=true". In these cases,
@@ -63,7 +63,7 @@ void GenDCmdArgument::read_value(const char* str, size_t len, TRAPS) {
     THROW_MSG(vmSymbols::java_lang_IllegalArgumentException(),
             "Duplicates in diagnostic command arguments\n");
   }
-  parse_value(str, len, CHECK);
+  parse_value(str, len, out, CHECK);
   set_is_set(true);
 }
 
@@ -109,7 +109,7 @@ void GenDCmdArgument::to_string(StringArrayArgument* f, char* buf, size_t len) c
 }
 
 template <> void DCmdArgument<jlong>::parse_value(const char* str,
-                                                  size_t len, TRAPS) {
+                                                  size_t len, outputStream* out, TRAPS) {
   int scanned = -1;
   if (str == nullptr
       || sscanf(str, JLONG_FORMAT "%n", &_value, &scanned) != 1
@@ -124,9 +124,9 @@ template <> void DCmdArgument<jlong>::parse_value(const char* str,
   }
 }
 
-template <> void DCmdArgument<jlong>::init_value(TRAPS) {
+template <> void DCmdArgument<jlong>::init_value(outputStream* out, TRAPS) {
   if (has_default()) {
-    this->parse_value(_default_string, strlen(_default_string), THREAD);
+    this->parse_value(_default_string, strlen(_default_string), out, THREAD);
     if (HAS_PENDING_EXCEPTION) {
       fatal("Default string must be parseable");
     }
@@ -138,7 +138,7 @@ template <> void DCmdArgument<jlong>::init_value(TRAPS) {
 template <> void DCmdArgument<jlong>::destroy_value() { }
 
 template <> void DCmdArgument<bool>::parse_value(const char* str,
-                                                 size_t len, TRAPS) {
+                                                 size_t len, outputStream* out, TRAPS) {
   // len is the length of the current token starting at str
   if (len == 0) {
     set_value(true);
@@ -165,9 +165,9 @@ PRAGMA_DIAG_POP
   }
 }
 
-template <> void DCmdArgument<bool>::init_value(TRAPS) {
+template <> void DCmdArgument<bool>::init_value(outputStream* out, TRAPS) {
   if (has_default()) {
-    this->parse_value(_default_string, strlen(_default_string), THREAD);
+    this->parse_value(_default_string, strlen(_default_string), out, THREAD);
     if (HAS_PENDING_EXCEPTION) {
       fatal("Default string must be parsable");
     }
@@ -184,7 +184,7 @@ template <> void DCmdArgument<char*>::destroy_value() {
 }
 
 template <> void DCmdArgument<char*>::parse_value(const char* str,
-                                                  size_t len, TRAPS) {
+                                                  size_t len, outputStream* out, TRAPS) {
   if (str == nullptr) {
     destroy_value();
   } else {
@@ -204,15 +204,15 @@ template <> void DCmdArgument<char*>::parse_value(const char* str,
   }
 }
 
-template <> void DCmdArgument<char*>::init_value(TRAPS) {
+template <> void DCmdArgument<char*>::init_value(outputStream* out, TRAPS) {
   set_value(nullptr); // Must be initialized before calling parse_value
   if (has_default()) {
-    this->parse_value(_default_string, strlen(_default_string), THREAD);
+    this->parse_value(_default_string, strlen(_default_string), out, THREAD);
   }
 }
 
 template <> void DCmdArgument<NanoTimeArgument>::parse_value(const char* str,
-                                                 size_t len, TRAPS) {
+                                                 size_t len, outputStream* out, TRAPS) {
   if (str == nullptr) {
     THROW_MSG(vmSymbols::java_lang_IllegalArgumentException(),
               "Integer parsing error nanotime value: syntax error, value is null\n");
@@ -270,9 +270,9 @@ template <> void DCmdArgument<NanoTimeArgument>::parse_value(const char* str,
   }
 }
 
-template <> void DCmdArgument<NanoTimeArgument>::init_value(TRAPS) {
+template <> void DCmdArgument<NanoTimeArgument>::init_value(outputStream* out, TRAPS) {
   if (has_default()) {
-    this->parse_value(_default_string, strlen(_default_string), THREAD);
+    this->parse_value(_default_string, strlen(_default_string), out, THREAD);
     if (HAS_PENDING_EXCEPTION) {
       fatal("Default string must be parsable");
     }
@@ -289,11 +289,11 @@ template <> void DCmdArgument<NanoTimeArgument>::destroy_value() { }
 // used as an argument with the DCmdParser
 
 template <> void DCmdArgument<StringArrayArgument*>::parse_value(const char* str,
-                                                  size_t len, TRAPS) {
+                                                  size_t len, outputStream* out, TRAPS) {
   _value->add(str,len);
 }
 
-template <> void DCmdArgument<StringArrayArgument*>::init_value(TRAPS) {
+template <> void DCmdArgument<StringArrayArgument*>::init_value(outputStream* out, TRAPS) {
   _value = new StringArrayArgument();
   _allow_multiple = true;
   if (has_default()) {
@@ -309,7 +309,7 @@ template <> void DCmdArgument<StringArrayArgument*>::destroy_value() {
 }
 
 template <> void DCmdArgument<MemorySizeArgument>::parse_value(const char* str,
-                                                  size_t len, TRAPS) {
+                                                  size_t len, outputStream* out, TRAPS) {
   if (str == nullptr) {
     THROW_MSG(vmSymbols::java_lang_IllegalArgumentException(),
                "Parsing error memory size value: syntax error, value is null\n");
@@ -345,9 +345,9 @@ template <> void DCmdArgument<MemorySizeArgument>::parse_value(const char* str,
    }
 }
 
-template <> void DCmdArgument<MemorySizeArgument>::init_value(TRAPS) {
+template <> void DCmdArgument<MemorySizeArgument>::init_value(outputStream* out, TRAPS) {
   if (has_default()) {
-    this->parse_value(_default_string, strlen(_default_string), THREAD);
+    this->parse_value(_default_string, strlen(_default_string), out, THREAD);
     if (HAS_PENDING_EXCEPTION) {
       fatal("Default string must be parsable");
     }

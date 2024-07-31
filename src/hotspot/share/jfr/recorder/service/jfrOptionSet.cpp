@@ -266,19 +266,19 @@ static DCmdArgument<bool> _dcmd_preserve_repository(
 static DCmdParser _parser;
 
 static void register_parser_options() {
-  _parser.add_dcmd_option(&_dcmd_repository);
-  _parser.add_dcmd_option(&_dcmd_dumppath);
-  _parser.add_dcmd_option(&_dcmd_threadbuffersize);
-  _parser.add_dcmd_option(&_dcmd_memorysize);
-  _parser.add_dcmd_option(&_dcmd_globalbuffersize);
-  _parser.add_dcmd_option(&_dcmd_numglobalbuffers);
-  _parser.add_dcmd_option(&_dcmd_maxchunksize);
-  _parser.add_dcmd_option(&_dcmd_stackdepth);
-  _parser.add_dcmd_option(&_dcmd_sample_threads);
-  _parser.add_dcmd_option(&_dcmd_retransform);
-  _parser.add_dcmd_option(&_dcmd_old_object_queue_size);
-  _parser.add_dcmd_option(&_dcmd_preserve_repository);
-  DEBUG_ONLY(_parser.add_dcmd_option(&_dcmd_sample_protection);)
+  _parser.add_dcmd_option(&_dcmd_repository, tty);
+  _parser.add_dcmd_option(&_dcmd_dumppath, tty);
+  _parser.add_dcmd_option(&_dcmd_threadbuffersize, tty);
+  _parser.add_dcmd_option(&_dcmd_memorysize, tty);
+  _parser.add_dcmd_option(&_dcmd_globalbuffersize, tty);
+  _parser.add_dcmd_option(&_dcmd_numglobalbuffers, tty);
+  _parser.add_dcmd_option(&_dcmd_maxchunksize, tty);
+  _parser.add_dcmd_option(&_dcmd_stackdepth, tty);
+  _parser.add_dcmd_option(&_dcmd_sample_threads, tty);
+  _parser.add_dcmd_option(&_dcmd_retransform, tty);
+  _parser.add_dcmd_option(&_dcmd_old_object_queue_size, tty);
+  _parser.add_dcmd_option(&_dcmd_preserve_repository, tty);
+  DEBUG_ONLY(_parser.add_dcmd_option(&_dcmd_sample_protection, tty);)
 }
 
 static bool parse_flight_recorder_options_internal(TRAPS) {
@@ -287,7 +287,7 @@ static bool parse_flight_recorder_options_internal(TRAPS) {
   }
   const size_t length = strlen((const char*)FlightRecorderOptions);
   CmdLine cmdline((const char*)FlightRecorderOptions, length, true);
-  _parser.parse(&cmdline, ',', THREAD);
+  _parser.parse(&cmdline, ',', tty, THREAD);
   if (HAS_PENDING_EXCEPTION) {
     for (int index = 0; index < 9; index++) {
       ObsoleteOption option = OBSOLETE_OPTIONS[index];

@@ -54,13 +54,13 @@ NMTDCmd::NMTDCmd(outputStream* output,
             "BOOLEAN", false, "false"),
   _scale("scale", "Memory usage in which scale, KB, MB or GB",
        "STRING", false, "KB") {
-  _dcmdparser.add_dcmd_option(&_summary);
-  _dcmdparser.add_dcmd_option(&_detail);
-  _dcmdparser.add_dcmd_option(&_baseline);
-  _dcmdparser.add_dcmd_option(&_summary_diff);
-  _dcmdparser.add_dcmd_option(&_detail_diff);
-  _dcmdparser.add_dcmd_option(&_statistics);
-  _dcmdparser.add_dcmd_option(&_scale);
+  _dcmdparser.add_dcmd_option(&_summary, output);
+  _dcmdparser.add_dcmd_option(&_detail, output);
+  _dcmdparser.add_dcmd_option(&_baseline, output);
+  _dcmdparser.add_dcmd_option(&_summary_diff, output);
+  _dcmdparser.add_dcmd_option(&_detail_diff, output);
+  _dcmdparser.add_dcmd_option(&_statistics, output);
+  _dcmdparser.add_dcmd_option(&_scale, output);
 }
 
 
