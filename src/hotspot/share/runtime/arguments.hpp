@@ -504,6 +504,9 @@ class Arguments : AllStatic {
   // Utility: copies src into buf, replacing "%%" with "%" and "%p" with pid.
   static bool copy_expand_pid(const char* src, size_t srclen, char* buf, size_t buflen);
 
+  // Utility: copies src into buf, replacing "%%" with "%", "%p" with pid and "%t" with timestamp
+  static bool copy_expand_arguments(const char* src, size_t srclen, char* buf, size_t buflen, jlong time);
+
   static bool atojulong(const char *s, julong* result);
 
   static bool has_jfr_option() NOT_JFR_RETURN_(false);
