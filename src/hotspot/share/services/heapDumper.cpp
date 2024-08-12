@@ -2816,7 +2816,7 @@ void HeapDumper::dump_heap(bool oome) {
     if (use_default_filename) {
       // TODO Sonia
       stringStream default_filename;
-      default_filename.print("%s%s", "java_pid_%p_%t", dump_file_ext);
+      default_filename.print("%s%%p%s", dump_file_name, dump_file_ext);
       const size_t dlen = strlen(base_path);  // if heap dump dir specified
       strncpy(&base_path[dlen], default_filename.base(), sizeof(base_path) - dlen);
     }
