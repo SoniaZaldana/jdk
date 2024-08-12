@@ -2823,9 +2823,9 @@ void HeapDumper::dump_heap(bool oome) {
 
     // Expand arguments in filename
     char filepath[JVM_MAXPATHLEN];
-    if (!Arguments::copy_expand_arguments(base_path, sizeof(base_path),
-                                          filepath, sizeof(filepath), 900055550)) {
-      warning("TODO Sonia -  something went wrong");
+    if (!Arguments::copy_expand_arguments(base_path, strlen(base_path),
+                                          filepath, sizeof(filepath))) {
+      warning("Cannot expand arguments in filename.");
       return;
     }
     strncpy(base_path, filepath, sizeof(filepath));

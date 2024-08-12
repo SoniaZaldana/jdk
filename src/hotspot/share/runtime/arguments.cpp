@@ -102,6 +102,8 @@ size_t Arguments::_default_SharedBaseAddress    = SharedBaseAddress;
 
 bool   Arguments::_enable_preview               = false;
 
+jlong  Arguments::_vm_start_time                = 0;
+
 LegacyGCLogging Arguments::_legacyGCLogging     = { nullptr, 0 };
 
 // These are not set by the JDK's built-in launchers, but they can be set by
@@ -3923,8 +3925,7 @@ bool Arguments::copy_expand_pid(const char* src, size_t srclen,
 // arguments, it also returns false instead of returning the partially
 // expanded one.
 // 2. The passed in "buflen" should be large enough to hold the null terminator.
-bool Arguments::copy_expand_arguments(const char* src, size_t srclen, char* buf, size_t buflen,
-                                      jlong vm_start_time) {
+bool Arguments::copy_expand_arguments(const char* src, size_t srclen, char* buf, size_t buflen) {
 const char* p = src;
   char* b = buf;
   const char* src_end = &src[srclen];
@@ -3948,7 +3949,7 @@ const char* p = src;
           return false;
         } else {
           b += ret;
-          assert(*b == '\0', "fail in copy_expand_pid");
+          assert(*b == '\0', "fail in copy_expand_arguments.");
           if (p == src_end && b == buf_end + 1) {
             // reach the end of the buffer.
             return true;
@@ -3958,14 +3959,14 @@ const char* p = src;
         break;
       }
       case 't':  {       //  "%t" ==> current timestamp
-        // Write current time start_time_str
+        // Write vm start time to to time_str
         const size_t time_buffer_len = 20;
         char time_str[time_buffer_len];
         struct tm local_time;
-        time_t utc_time = vm_start_time / 1000;
+        time_t utc_time = _vm_start_time / 1000;
         os::localtime_pd(&utc_time, &local_time);
         int res = (int)strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", &local_time);
-        assert(res > 0, "fail in copy_expand_argument. Time buffer too small.");
+        assert(res > 0, "fail in copy_expand_arguments. Time buffer too small.");
 
         // buf_end points to the character before the last character so
         // that we could write '\0' to the end of the buffer.
@@ -3978,7 +3979,7 @@ const char* p = src;
           return false;
         } else {
           b += ret;
-          assert(*b == '\0', "fail in coppy_expand_timestamp");
+          assert(*b == '\0', "fail in copy_expand_arguments");
           if (p == src_end && b == buf_end + 1) {
             // reach the end of the buffer.
             return true;
