@@ -504,9 +504,7 @@ class Arguments : AllStatic {
   static void set_enable_preview() { _enable_preview = true; }
   static bool enable_preview() { return _enable_preview; }
 
-  // Utility: copies src into buf, replacing "%%" with "%" and "%p" with pid.
-  static bool copy_expand_pid(const char* src, size_t srclen, char* buf, size_t buflen);
-
+  // Records vm start time
   static void set_vm_start_time(jlong time) { _vm_start_time = time; }
   static jlong vm_start_time() { return _vm_start_time; }
 

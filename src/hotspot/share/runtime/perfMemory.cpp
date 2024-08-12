@@ -249,7 +249,7 @@ char* PerfMemory::get_perfdata_file_path() {
     // dest_file_name stores the validated file name if file_name
     // contains %p which will be replaced by pid.
     dest_file = NEW_C_HEAP_ARRAY(char, JVM_MAXPATHLEN, mtInternal);
-    if(!Arguments::copy_expand_pid(PerfDataSaveFile, strlen(PerfDataSaveFile),
+    if(!Arguments::copy_expand_arguments(PerfDataSaveFile, strlen(PerfDataSaveFile),
                                    dest_file, JVM_MAXPATHLEN)) {
       FREE_C_HEAP_ARRAY(char, dest_file);
       if (PrintMiscellaneous && Verbose) {

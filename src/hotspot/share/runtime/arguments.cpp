@@ -3861,60 +3861,6 @@ void Arguments::PropertyList_unique_add(SystemProperty** plist, const char* k, c
   PropertyList_add(plist, k, v, writeable == WriteableProperty, internal == InternalProperty);
 }
 
-// Copies src into buf, replacing "%%" with "%" and "%p" with pid
-// Returns true if all of the source pointed by src has been copied over to
-// the destination buffer pointed by buf. Otherwise, returns false.
-// Notes:
-// 1. If the length (buflen) of the destination buffer excluding the
-// null terminator character is not long enough for holding the expanded
-// pid characters, it also returns false instead of returning the partially
-// expanded one.
-// 2. The passed in "buflen" should be large enough to hold the null terminator.
-bool Arguments::copy_expand_pid(const char* src, size_t srclen,
-                                char* buf, size_t buflen) {
-  const char* p = src;
-  char* b = buf;
-  const char* src_end = &src[srclen];
-  char* buf_end = &buf[buflen - 1];
-
-  while (p < src_end && b < buf_end) {
-    if (*p == '%') {
-      switch (*(++p)) {
-      case '%':         // "%%" ==> "%"
-        *b++ = *p++;
-        break;
-      case 'p':  {       //  "%p" ==> current process id
-        // buf_end points to the character before the last character so
-        // that we could write '\0' to the end of the buffer.
-        size_t buf_sz = buf_end - b + 1;
-        int ret = jio_snprintf(b, buf_sz, "%d", os::current_process_id());
-
-        // if jio_snprintf fails or the buffer is not long enough to hold
-        // the expanded pid, returns false.
-        if (ret < 0 || ret >= (int)buf_sz) {
-          return false;
-        } else {
-          b += ret;
-          assert(*b == '\0', "fail in copy_expand_pid");
-          if (p == src_end && b == buf_end + 1) {
-            // reach the end of the buffer.
-            return true;
-          }
-        }
-        p++;
-        break;
-      }
-      default :
-        *b++ = '%';
-      }
-    } else {
-      *b++ = *p++;
-    }
-  }
-  *b = '\0';
-  return (p == src_end); // return false if not all of the source was copied
-}
-
 // Copies src into buf, replacing "%%" with "%", "%p" with pid and
 // "%t" with the timestamp.
 // Returns true if all of the source pointed by src has been copied over to
