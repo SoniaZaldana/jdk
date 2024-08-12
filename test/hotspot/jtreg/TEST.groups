@@ -565,6 +565,9 @@ tier1_serviceability = \
   -serviceability/sa/TestJmapCore.java \
   -serviceability/sa/TestJmapCoreMetaspace.java
 
+substitution = \
+  runtime/ErrorHandling/TestHeapDumpFilenameExpansion.java
+
 tier1 = \
   :tier1_common \
   :tier1_compiler \

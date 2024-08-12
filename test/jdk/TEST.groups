@@ -306,6 +306,9 @@ core_tools = \
     jdk/internal/jrtfs \
     sun/tools/jrunscript
 
+args = \
+  sun/tools/jcmd
+
 svc_tools = \
     com/sun/tools/attach \
     sun/tools \
