@@ -335,6 +335,8 @@ void ostream_init_log();
 void ostream_exit();
 void ostream_abort();
 const char* make_log_name(const char* log_name, const char* force_directory);
+// convert YYYY-MM-DD HH:MM:SS to YYYY-MM-DD_HH-MM-SS
+const char* get_datetime_string(char *buf, size_t len);
 
 // In the non-fixed buffer case an underlying buffer will be created and
 // managed in C heap. Not MT-safe.

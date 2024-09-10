@@ -66,6 +66,7 @@
 #include "utilities/debug.hpp"
 #include "utilities/defaultStream.hpp"
 #include "utilities/macros.hpp"
+#include "utilities/ostream.hpp"
 #include "utilities/parseInteger.hpp"
 #include "utilities/powerOfTwo.hpp"
 #include "utilities/stringUtils.hpp"
@@ -101,8 +102,6 @@ bool   Arguments::_ClipInlining                 = ClipInlining;
 size_t Arguments::_default_SharedBaseAddress    = SharedBaseAddress;
 
 bool   Arguments::_enable_preview               = false;
-
-jlong  Arguments::_vm_start_time                = 0;
 
 LegacyGCLogging Arguments::_legacyGCLogging     = { nullptr, 0 };
 
@@ -3925,14 +3924,10 @@ const char* p = src;
         break;
       }
       case 't':  {       //  "%t" ==> current timestamp
-        // Write vm start time to to time_str
-        const size_t time_buffer_len = 20;
+        // Write current time to to time_str
+        const size_t time_buffer_len = 32;
         char time_str[time_buffer_len];
-        struct tm local_time;
-        time_t utc_time = _vm_start_time / 1000;
-        os::localtime_pd(&utc_time, &local_time);
-        int res = (int)strftime(time_str, sizeof(time_str), "%Y-%m-%d_%H-%M-%S", &local_time);
-        assert(res > 0, "fail in copy_expand_arguments. Time buffer too small.");
+        get_datetime_string(time_str, sizeof(time_str));
 
         // buf_end points to the character before the last character so
         // that we could write '\0' to the end of the buffer.

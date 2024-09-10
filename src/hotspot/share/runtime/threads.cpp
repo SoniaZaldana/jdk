@@ -444,11 +444,7 @@ jint Threads::create_vm(JavaVMInitArgs* args, bool* canTryAgain) {
   Arguments::init_version_specific_system_properties();
 
   // Make sure to initialize log configuration *before* parsing arguments
-  jlong start_time = create_vm_timer.begin_time();
-  LogConfiguration::initialize(start_time);
-
-  // Initialize start time for argument expansion
-  Arguments::set_vm_start_time(start_time);
+  LogConfiguration::initialize(create_vm_timer.begin_time());
 
   // Parse arguments
   // Note: this internally calls os::init_container_support()
