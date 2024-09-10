@@ -84,7 +84,7 @@ public class TestJcmdArgumentSubstitution {
         boolean found = false;
         Pattern pattern = Pattern.compile("myfile\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}");
         File[] files = new File(test_dir).listFiles();
-        if(files != null) {
+        if (files != null) {
             for (File file : files) {
                 Matcher matcher = pattern.matcher(file.getName());
                 if (matcher.find()) {

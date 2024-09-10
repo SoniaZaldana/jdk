@@ -50,7 +50,7 @@ public class TestHeapDumpFilenameExpansion {
         if (args.length == 0) {
             try {
                 Object[] oa = new Object[Integer.MAX_VALUE];
-                for(int i = 0; i < oa.length; i++) {
+                for (int i = 0; i < oa.length; i++) {
                     oa[i] = new Object[Integer.MAX_VALUE];
                 }
             } catch (OutOfMemoryError err) {
@@ -87,7 +87,7 @@ public class TestHeapDumpFilenameExpansion {
         boolean found = false;
         Pattern pattern = Pattern.compile("file\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}-\\d{2}");
         File[] files = new File(".").listFiles();
-        if(files != null) {
+        if (files != null) {
             for (File file : files) {
                 Matcher matcher = pattern.matcher(file.getName());
                 if (matcher.find()) {
