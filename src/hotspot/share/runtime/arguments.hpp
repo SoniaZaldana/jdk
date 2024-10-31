@@ -25,6 +25,7 @@
 #ifndef SHARE_RUNTIME_ARGUMENTS_HPP
 #define SHARE_RUNTIME_ARGUMENTS_HPP
 
+#include "logging/logDecorations.hpp"
 #include "logging/logLevel.hpp"
 #include "logging/logTag.hpp"
 #include "memory/allStatic.hpp"
@@ -277,6 +278,9 @@ class Arguments : AllStatic {
   static abort_hook_t     _abort_hook;
   static exit_hook_t      _exit_hook;
   static vfprintf_hook_t  _vfprintf_hook;
+
+  // Decorators
+  static const LogTagSet& _tagset;
 
   // System properties
   static bool add_property(const char* prop, PropertyWriteable writeable=WriteableProperty,

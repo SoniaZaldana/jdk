@@ -126,6 +126,8 @@ bool Arguments::_has_jimage = false;
 
 char* Arguments::_ext_dirs = nullptr;
 
+const LogTagSet& Arguments::_tagset = LogTagSetMapping<LOG_TAGS(logging, safepoint)>::tagset();
+
 // True if -Xshare:auto option was specified.
 static bool xshare_auto_cmd_line = false;
 
@@ -3897,64 +3899,59 @@ const char* p = src;
   char* buf_end = &buf[buflen - 1];
 
   while (p < src_end && b < buf_end) {
-    if (*p == '%') {
-      switch (*(++p)) {
-      case '%':         // "%%" ==> "%"
-        *b++ = *p++;
-        break;
-      case 'p':  {       //  "%p" ==> current process id
-        // buf_end points to the character before the last character so
-        // that we could write '\0' to the end of the buffer.
-        size_t buf_sz = buf_end - b + 1;
-        int ret = jio_snprintf(b, buf_sz, "%d", os::current_process_id());
+      if (*p == '%') {
+          p++;
+          if (p < src_end) {
+              const char* decorator_name = nullptr;
+              LogDecorators::Decorator decorator_type;
+              switch (*p) {
+                  case '%':  // "%%" ==> "%"
+                      *b++ = '%';
+                      break;
+                  case 'p':  //  "%p" ==> current process id
+                      decorator_name = "pid";
+                      decorator_type = LogDecorators::pid_decorator;
+                      break;
+                  case 't':  //  "%t" ==> current timestamp
+                      decorator_name = "time";
+                      decorator_type = LogDecorators::time_decorator;
+                      break;
+                  case 'u':  //  "%u" ==> uptime
+                      decorator_name = "uptime";
+                      decorator_type = LogDecorators::uptime_decorator;
+                      break;
+                  default:
+                      *b++ = '%';
+                      *b++ = *p;
+                      p++;
+                      continue;
+              }
 
-        // if jio_snprintf fails or the buffer is not long enough to hold
-        // the expanded pid, returns false.
-        if (ret < 0 || ret >= (int)buf_sz) {
-          return false;
-        } else {
-          b += ret;
-          assert(*b == '\0', "fail in copy_expand_arguments.");
-          if (p == src_end && b == buf_end + 1) {
-            // reach the end of the buffer.
-            return true;
+              if (decorator_name) {
+                  char temp_buf[LogDecorations::max_decoration_size + 1];
+                  LogDecorators decorator_selection;
+                  decorator_selection.parse(decorator_name);
+                  LogDecorations decorations(LogLevel::Info, _tagset, decorator_selection);
+                  const char* str = decorations.decoration(decorator_type, temp_buf, sizeof(temp_buf));
+
+                  // buf_end points to the character before the last character so
+                  // that we could write '\0' to the end of the buffer.
+                  size_t buf_sz = buf_end - b + 1;
+                  int ret = jio_snprintf(b, buf_sz, "%s", str);
+
+                  // if jio_snprintf fails or the buffer is not long enough to hold
+                  // the expanded timestamp, returns false.
+                  if (ret < 0 || ret >= static_cast<int>(buf_sz)) {
+                      return false;
+                  }
+                  b += ret;
+                  assert(*b == '\0', "fail in copy_expand_arguments");
+              }
+              p++;
           }
-        }
-        p++;
-        break;
+      } else {
+          *b++ = *p++;
       }
-      case 't':  {       //  "%t" ==> current timestamp
-        // Write current time to to time_str
-        const size_t time_buffer_len = 32;
-        char time_str[time_buffer_len];
-        get_datetime_string(time_str, sizeof(time_str));
-
-        // buf_end points to the character before the last character so
-        // that we could write '\0' to the end of the buffer.
-        size_t buf_sz = buf_end - b + 1;
-        int ret = jio_snprintf(b, buf_sz, "%s", time_str);
-
-        // if jio_snprintf fails or the buffer is not long enough to hold
-        // the expanded timestamp, returns false.
-        if (ret < 0 || ret >= (int)buf_sz) {
-          return false;
-        } else {
-          b += ret;
-          assert(*b == '\0', "fail in copy_expand_arguments");
-          if (p == src_end && b == buf_end + 1) {
-            // reach the end of the buffer.
-            return true;
-          }
-        }
-        p++;
-        break;
-      }
-      default :
-        *b++ = '%';
-      }
-    } else {
-      *b++ = *p++;
-    }
   }
   *b = '\0';
   return (p == src_end); // return false if not all of the source was copied

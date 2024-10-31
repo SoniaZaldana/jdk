@@ -89,6 +89,7 @@ public class TestHeapDumpFilenameExpansion {
         File[] files = new File(".").listFiles();
         if (files != null) {
             for (File file : files) {
+                System.out.println("FILENAME: " + file.getName());
                 Matcher matcher = pattern.matcher(file.getName());
                 if (matcher.find()) {
                     found = true;
