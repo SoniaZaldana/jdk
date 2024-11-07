@@ -123,6 +123,7 @@ inline T next_power_of_2(T value)  {
 // Find log2 value greater than this input
 template <typename T, ENABLE_IF(std::is_integral<T>::value)>
 inline T ceil_log2(T value) {
+  assert(value > 0, "Invalid value");
   T ret;
   for (ret = 1; ((T)1 << ret) < value; ++ret);
   return ret;

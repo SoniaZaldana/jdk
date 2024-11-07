@@ -305,3 +305,30 @@ TEST(power_of_2, log2i) {
   check_log2i_variants_for((uint)0);
   check_log2i_variants_for((jlong)0);
 }
+
+template <typename T> void test_ceil_log2() {
+  // Valid test cases
+  EXPECT_EQ(ceil_log2(T(1)), T(0)) << "value = " << T(1);
+  EXPECT_EQ(ceil_log2(T(2)), T(1)) << "value = " << T(2);
+  EXPECT_EQ(ceil_log2(T(3)), T(2)) << "value = " << T(3);
+  EXPECT_EQ(ceil_log2(T(4)), T(2)) << "value = " << T(4);
+  EXPECT_EQ(ceil_log2(T(5)), T(3)) << "value = " << T(5);
+  EXPECT_EQ(ceil_log2(T(255)), T(8)) << "value = " << T(255);
+  EXPECT_EQ(ceil_log2(T(1024)), T(10)) << "value = " << T(1024);
+
+  // Invalid inputs (assertions should trigger in function)
+  // EXPECT_ANY_THROW(ceil_log2(T(0))) << "Expected exception for value = 0";
+  // EXPECT_ANY_THROW(ceil_log2(T(-5))) << "Expected exception for value = -5";
+}
+
+TEST(power_of_2, ceil_log2) {
+  test_ceil_log2<int8_t>();
+  test_ceil_log2<int16_t>();
+  test_ceil_log2<int32_t>();
+  test_ceil_log2<int64_t>();
+  test_ceil_log2<uint8_t>();
+  test_ceil_log2<uint16_t>();
+  test_ceil_log2<uint32_t>();
+  test_ceil_log2<uint64_t>();
+}
+
