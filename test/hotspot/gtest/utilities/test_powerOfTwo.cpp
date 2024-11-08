@@ -315,10 +315,6 @@ template <typename T> void test_ceil_log2() {
   EXPECT_EQ(ceil_log2(T(5)), T(3)) << "value = " << T(5);
   EXPECT_EQ(ceil_log2(T(255)), T(8)) << "value = " << T(255);
   EXPECT_EQ(ceil_log2(T(1024)), T(10)) << "value = " << T(1024);
-
-  // Invalid inputs (assertions should trigger in function)
-  // EXPECT_ANY_THROW(ceil_log2(T(0))) << "Expected exception for value = 0";
-  // EXPECT_ANY_THROW(ceil_log2(T(-5))) << "Expected exception for value = -5";
 }
 
 TEST(power_of_2, ceil_log2) {
