@@ -303,7 +303,8 @@ JRT_END
 static void print_objects(JavaThread* deoptee_thread,
                           GrowableArray<ScopeValue*>* objects, bool realloc_failures) {
   ResourceMark rm;
-  stringStream st;  // change to logStream with logging
+  LogMessage(deoptimization) msg;
+  NonInterleavingLogStream st{LogLevelType::Trace, msg};
   st.print_cr("REALLOC OBJECTS in thread " INTPTR_FORMAT, p2i(deoptee_thread));
   fieldDescriptor fd;
 
@@ -326,7 +327,6 @@ static void print_objects(JavaThread* deoptee_thread,
       k->oop_print_on(obj(), &st);
     }
   }
-  tty->print_raw(st.freeze());
 }
 
 static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* compiled_method,
@@ -360,8 +360,8 @@ static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* co
     return_value = Handle(thread, result);
     assert(Universe::heap()->is_in_or_null(result), "must be heap pointer");
     if (TraceDeoptimization) {
-      tty->print_cr("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
-      tty->cr();
+      LogMessage(deoptimization) msg;
+      msg.trace("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
     }
   }
   if (objects != nullptr) {
@@ -764,7 +764,8 @@ Deoptimization::UnrollBlock* Deoptimization::fetch_unroll_info_helper(JavaThread
 
   if (array->frames() > 1) {
     if (VerifyStack && TraceDeoptimization) {
-      tty->print_cr("Deoptimizing method containing inlining");
+      LogMessage(deoptimization) msg;
+      msg.trace("Deoptimizing method containing inlining");
     }
   }
 
@@ -1701,12 +1702,14 @@ vframeArray* Deoptimization::create_vframeArray(JavaThread* thread, frame fr, Re
 
   if (TraceDeoptimization) {
     ResourceMark rm;
-    stringStream st;
+    LogMessage(deoptimization) msg;
+    NonInterleavingLogStream st{LogLevelType::Trace, msg};
     st.print_cr("DEOPT PACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT, p2i(thread), p2i(array));
     st.print("   ");
     fr.print_on(&st);
-    st.print_cr("   Virtual frames (innermost/newest first):");
+    st.print("   Virtual frames (innermost/newest first):");
     for (int index = 0; index < chunk->length(); index++) {
+      st.cr();
       compiledVFrame* vf = chunk->at(index);
       int bci = vf->raw_bci();
       const char* code_name;
@@ -1720,10 +1723,8 @@ vframeArray* Deoptimization::create_vframeArray(JavaThread* thread, frame fr, Re
       st.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(vf));
       st.print(" - %s", vf->method()->name_and_sig_as_C_string());
       st.print(" - %s", code_name);
-      st.print_cr(" @ bci=%d ", bci);
+      st.print(" @ bci=%d ", bci);
     }
-    tty->print_raw(st.freeze());
-    tty->cr();
   }
 
   return array;
@@ -2187,8 +2188,9 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
         xtty->stamp();
         xtty->end_head();
       }
-      if (TraceDeoptimization) {  // make noise on the tty
-        stringStream st;
+      if (TraceDeoptimization) {
+        LogMessage(deoptimization) msg;
+        NonInterleavingLogStream st{LogLevelType::Trace, msg};
         st.print("UNCOMMON TRAP method=%s", trap_scope->method()->name_and_sig_as_C_string());
         st.print("  bci=%d pc=" INTPTR_FORMAT ", relative_pc=" INTPTR_FORMAT JVMCI_ONLY(", debug_id=%d"),
                  trap_scope->bci(), p2i(fr.pc()), fr.pc() - nm->code_begin() JVMCI_ONLY(COMMA debug_id));
@@ -2215,8 +2217,6 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
           st.print(unresolved ? " unresolved class: " : " symbol: ");
           class_name->print_symbol_on(&st);
         }
-        st.cr();
-        tty->print_raw(st.freeze());
       }
       if (xtty != nullptr) {
         // Log the precise location of the trap.

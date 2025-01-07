@@ -590,13 +590,13 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
   Events::log_deopt_message(current, "DEOPT UNPACKING pc=" INTPTR_FORMAT " sp=" INTPTR_FORMAT " mode %d",
                             p2i(unpack_frame.pc()), p2i(unpack_frame.sp()), exec_mode);
 
+  LogMessage(deoptimization) msg;
+  ResourceMark rm;
+  NonInterleavingLogStream st{LogLevelType::Trace, msg};
   if (TraceDeoptimization) {
-    ResourceMark rm;
-    stringStream st;
     st.print_cr("DEOPT UNPACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT " mode=%d",
                 p2i(current), p2i(this), exec_mode);
-    st.print_cr("   Virtual frames (outermost/oldest first):");
-    tty->print_raw(st.freeze());
+    st.print("   Virtual frames (outermost/oldest first):");
   }
 
   // Do the unpacking of interpreter frames; the frame at index 0 represents the top activation, so it has no callee
@@ -619,8 +619,7 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
       callee_locals     = callee->max_locals();
     }
     if (TraceDeoptimization) {
-      ResourceMark rm;
-      stringStream st;
+      st.cr();
       st.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(elem));
       st.print(" - %s", elem->method()->name_and_sig_as_C_string());
       int bci = elem->raw_bci();
@@ -633,8 +632,7 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
       }
       st.print(" - %s", code_name);
       st.print(" @ bci=%d ", bci);
-      st.print_cr("sp=" PTR_FORMAT, p2i(elem->iframe()->sp()));
-      tty->print_raw(st.freeze());
+      st.print("sp=" PTR_FORMAT, p2i(elem->iframe()->sp()));
     }
     elem->unpack_on_stack(caller_actual_parameters,
                           callee_parameters,
@@ -650,9 +648,6 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
     caller_actual_parameters = callee_parameters;
   }
   deallocate_monitor_chunks();
-  if (TraceDeoptimization) {
-    tty->cr();
-  }
 }
 
 void vframeArray::deallocate_monitor_chunks() {
