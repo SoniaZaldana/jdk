@@ -2139,6 +2139,7 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
     // Print a bunch of diagnostics, if requested.
     if (TraceDeoptimization || LogCompilation || is_receiver_constraint_failure) {
       // TODO sonia - need to do a bit more digging here.
+      // I think we don't change the xtty parts.
 
       ResourceMark rm;
 
@@ -2247,12 +2248,12 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
             }
           }
 #endif
-        st.print(" (@" INTPTR_FORMAT ") thread=%zu reason=%s action=%s unloaded_class_index=%d" JVMCI_ONLY(" debug_id=%d"),
-                   p2i(fr.pc()),
-                   os::current_thread_id(),
-                   trap_reason_name(reason),
-                   trap_action_name(action),
-                   unloaded_class_index
+          st.print(" (@" INTPTR_FORMAT ") thread=" UINTX_FORMAT " reason=%s action=%s unloaded_class_index=%d" JVMCI_ONLY(" debug_id=%d"),
+                    p2i(fr.pc()),
+                    os::current_thread_id(),
+                    trap_reason_name(reason),
+                    trap_action_name(action),
+                    unloaded_class_index
 #if INCLUDE_JVMCI
                     , debug_id
 #endif
