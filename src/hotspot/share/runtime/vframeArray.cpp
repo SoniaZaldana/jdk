@@ -592,7 +592,7 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
 
   if (TraceDeoptimization) {
     ResourceMark rm;
-    LogTarget(Debug, deoptimization) lt;
+    LogTarget(Trace, deoptimization) lt;
     if (lt.is_enabled()) {
       LogStream ls(lt);
       ls.print_cr("DEOPT UNPACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT " mode=%d",
@@ -622,7 +622,7 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
     }
     if (TraceDeoptimization) {
       ResourceMark rm;
-      LogTarget(Debug, deoptimization) lt;
+      LogTarget(Trace, deoptimization) lt;
       if (lt.is_enabled()) {
         LogStream ls(lt);
         ls.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(elem));

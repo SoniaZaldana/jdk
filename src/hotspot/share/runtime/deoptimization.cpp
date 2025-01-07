@@ -302,7 +302,7 @@ JRT_END
 // print information about reallocated objects
 static void print_objects(JavaThread* deoptee_thread,
                           GrowableArray<ScopeValue*>* objects, bool realloc_failures) {
-  LogTarget(Debug, deoptimization) lt;
+  LogTarget(Trace, deoptimization) lt;
   if (lt.is_enabled()) {
     ResourceMark rm;
     LogStream ls(lt);
@@ -362,7 +362,7 @@ static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* co
     return_value = Handle(thread, result);
     assert(Universe::heap()->is_in_or_null(result), "must be heap pointer");
     if (TraceDeoptimization) {
-      LogTarget(Debug, deoptimization) lt;
+      LogTarget(Trace, deoptimization) lt;
       if (lt.is_enabled()) {
         LogStream ls(lt);
         ls.print_cr("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
@@ -770,7 +770,7 @@ Deoptimization::UnrollBlock* Deoptimization::fetch_unroll_info_helper(JavaThread
 
   if (array->frames() > 1) {
     if (VerifyStack && TraceDeoptimization) {
-      LogTarget(Debug, deoptimization) lt;
+      LogTarget(Trace, deoptimization) lt;
       if (lt.is_enabled()) {
         LogStream ls(lt);
         ls.print_cr("Deoptimizing method containing inlining");
@@ -1711,7 +1711,7 @@ vframeArray* Deoptimization::create_vframeArray(JavaThread* thread, frame fr, Re
 
   if (TraceDeoptimization) {
     ResourceMark rm;
-    LogTarget(Debug, deoptimization) lt;
+    LogTarget(Trace, deoptimization) lt;
     if (lt.is_enabled()) {
       LogStream ls(lt);
       ls.print_cr("DEOPT PACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT, p2i(thread), p2i(array));
@@ -2201,8 +2201,8 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
         xtty->stamp();
         xtty->end_head();
       }
-      if (TraceDeoptimization) {  // make noise on the tty - TODO sonia remove comment.
-        LogTarget(Debug, deoptimization) lt;
+      if (TraceDeoptimization) {
+        LogTarget(Trace, deoptimization) lt;
         if (lt.is_enabled()) {
           LogStream ls(lt);
           ls.print("UNCOMMON TRAP method=%s", trap_scope->method()->name_and_sig_as_C_string());
