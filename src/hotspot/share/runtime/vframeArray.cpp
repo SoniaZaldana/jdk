@@ -654,10 +654,6 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
     caller_actual_parameters = callee_parameters;
   }
   deallocate_monitor_chunks();
-  // if (TraceDeoptimization) {
-  //   tty->cr();
-  // }
-  // TODO sonia - review deletion above.
 }
 
 void vframeArray::deallocate_monitor_chunks() {

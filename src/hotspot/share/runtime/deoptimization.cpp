@@ -302,9 +302,9 @@ JRT_END
 // print information about reallocated objects
 static void print_objects(JavaThread* deoptee_thread,
                           GrowableArray<ScopeValue*>* objects, bool realloc_failures) {
-  ResourceMark rm;
   LogTarget(Debug, deoptimization) lt;
   if (lt.is_enabled()) {
+    ResourceMark rm;
     LogStream ls(lt);
     ls.print_cr("REALLOC OBJECTS in thread " INTPTR_FORMAT, p2i(deoptee_thread));
     fieldDescriptor fd;
@@ -366,6 +366,7 @@ static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* co
       if (lt.is_enabled()) {
         LogStream ls(lt);
         ls.print_cr("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
+        ls.cr();
       }
     }
   }
@@ -1733,6 +1734,7 @@ vframeArray* Deoptimization::create_vframeArray(JavaThread* thread, frame fr, Re
         ls.print(" - %s", code_name);
         ls.print_cr(" @ bci=%d ", bci);
       }
+      ls.cr();
     }
   }
 
