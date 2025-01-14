@@ -303,30 +303,32 @@ JRT_END
 static void print_objects(JavaThread* deoptee_thread,
                           GrowableArray<ScopeValue*>* objects, bool realloc_failures) {
   ResourceMark rm;
-  stringStream st;  // change to logStream with logging
-  st.print_cr("REALLOC OBJECTS in thread " INTPTR_FORMAT, p2i(deoptee_thread));
-  fieldDescriptor fd;
+  LogTarget(Debug, deoptimization) lt;
+  if (lt.is_enabled()) {
+    LogStream ls(lt);
+    ls.print_cr("REALLOC OBJECTS in thread " INTPTR_FORMAT, p2i(deoptee_thread));
+    fieldDescriptor fd;
 
-  for (int i = 0; i < objects->length(); i++) {
-    ObjectValue* sv = (ObjectValue*) objects->at(i);
-    Handle obj = sv->value();
+    for (int i = 0; i < objects->length(); i++) {
+      ObjectValue* sv = (ObjectValue*) objects->at(i);
+      Handle obj = sv->value();
 
-    if (obj.is_null()) {
-      st.print_cr("     nullptr");
-      continue;
-    }
+      if (obj.is_null()) {
+        ls.print_cr("     nullptr");
+        continue;
+      }
 
-    Klass* k = java_lang_Class::as_Klass(sv->klass()->as_ConstantOopReadValue()->value()());
+      Klass* k = java_lang_Class::as_Klass(sv->klass()->as_ConstantOopReadValue()->value()());
 
-    st.print("     object <" INTPTR_FORMAT "> of type ", p2i(sv->value()()));
-    k->print_value_on(&st);
-    st.print_cr(" allocated (" SIZE_FORMAT " bytes)", obj->size() * HeapWordSize);
+      ls.print("     object <" INTPTR_FORMAT "> of type ", p2i(sv->value()()));
+      k->print_value_on(&ls);
+      ls.print_cr(" allocated (" SIZE_FORMAT " bytes)", obj->size() * HeapWordSize);
 
-    if (Verbose && k != nullptr) {
-      k->oop_print_on(obj(), &st);
+      if (Verbose && k != nullptr) {
+        k->oop_print_on(obj(), &ls);
+      }
     }
   }
-  tty->print_raw(st.freeze());
 }
 
 static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* compiled_method,
@@ -360,8 +362,11 @@ static bool rematerialize_objects(JavaThread* thread, int exec_mode, nmethod* co
     return_value = Handle(thread, result);
     assert(Universe::heap()->is_in_or_null(result), "must be heap pointer");
     if (TraceDeoptimization) {
-      tty->print_cr("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
-      tty->cr();
+      LogTarget(Debug, deoptimization) lt;
+      if (lt.is_enabled()) {
+        LogStream ls(lt);
+        ls.print_cr("SAVED OOP RESULT " INTPTR_FORMAT " in thread " INTPTR_FORMAT, p2i(result), p2i(thread));
+      }
     }
   }
   if (objects != nullptr) {
@@ -764,7 +769,11 @@ Deoptimization::UnrollBlock* Deoptimization::fetch_unroll_info_helper(JavaThread
 
   if (array->frames() > 1) {
     if (VerifyStack && TraceDeoptimization) {
-      tty->print_cr("Deoptimizing method containing inlining");
+      LogTarget(Debug, deoptimization) lt;
+      if (lt.is_enabled()) {
+        LogStream ls(lt);
+        ls.print_cr("Deoptimizing method containing inlining");
+      }
     }
   }
 
@@ -1701,29 +1710,30 @@ vframeArray* Deoptimization::create_vframeArray(JavaThread* thread, frame fr, Re
 
   if (TraceDeoptimization) {
     ResourceMark rm;
-    stringStream st;
-    st.print_cr("DEOPT PACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT, p2i(thread), p2i(array));
-    st.print("   ");
-    fr.print_on(&st);
-    st.print_cr("   Virtual frames (innermost/newest first):");
-    for (int index = 0; index < chunk->length(); index++) {
-      compiledVFrame* vf = chunk->at(index);
-      int bci = vf->raw_bci();
-      const char* code_name;
-      if (bci == SynchronizationEntryBCI) {
-        code_name = "sync entry";
-      } else {
-        Bytecodes::Code code = vf->method()->code_at(bci);
-        code_name = Bytecodes::name(code);
-      }
+    LogTarget(Debug, deoptimization) lt;
+    if (lt.is_enabled()) {
+      LogStream ls(lt);
+      ls.print_cr("DEOPT PACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT, p2i(thread), p2i(array));
+      ls.print("   ");
+      fr.print_on(&ls);
+      ls.print_cr("   Virtual frames (innermost/newest first):");
+      for (int index = 0; index < chunk->length(); index++) {
+        compiledVFrame* vf = chunk->at(index);
+        int bci = vf->raw_bci();
+        const char* code_name;
+        if (bci == SynchronizationEntryBCI) {
+          code_name = "sync entry";
+        } else {
+          Bytecodes::Code code = vf->method()->code_at(bci);
+          code_name = Bytecodes::name(code);
+        }
 
-      st.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(vf));
-      st.print(" - %s", vf->method()->name_and_sig_as_C_string());
-      st.print(" - %s", code_name);
-      st.print_cr(" @ bci=%d ", bci);
+        ls.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(vf));
+        ls.print(" - %s", vf->method()->name_and_sig_as_C_string());
+        ls.print(" - %s", code_name);
+        ls.print_cr(" @ bci=%d ", bci);
+      }
     }
-    tty->print_raw(st.freeze());
-    tty->cr();
   }
 
   return array;
@@ -2126,6 +2136,8 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
 
     // Print a bunch of diagnostics, if requested.
     if (TraceDeoptimization || LogCompilation || is_receiver_constraint_failure) {
+      // TODO sonia - need to do a bit more digging here.
+
       ResourceMark rm;
 
       // Lock to read ProfileData, and ensure lock is not broken by a safepoint
@@ -2187,19 +2199,51 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
         xtty->stamp();
         xtty->end_head();
       }
-      if (TraceDeoptimization) {  // make noise on the tty
-        stringStream st;
-        st.print("UNCOMMON TRAP method=%s", trap_scope->method()->name_and_sig_as_C_string());
-        st.print("  bci=%d pc=" INTPTR_FORMAT ", relative_pc=" INTPTR_FORMAT JVMCI_ONLY(", debug_id=%d"),
-                 trap_scope->bci(), p2i(fr.pc()), fr.pc() - nm->code_begin() JVMCI_ONLY(COMMA debug_id));
-        st.print(" compiler=%s compile_id=%d", nm->compiler_name(), nm->compile_id());
+      if (TraceDeoptimization) {  // make noise on the tty - TODO sonia remove comment.
+        LogTarget(Debug, deoptimization) lt;
+        if (lt.is_enabled()) {
+          LogStream ls(lt);
+          ls.print("UNCOMMON TRAP method=%s", trap_scope->method()->name_and_sig_as_C_string());
+          ls.print("  bci=%d pc=" INTPTR_FORMAT ", relative_pc=" INTPTR_FORMAT JVMCI_ONLY(", debug_id=%d"),
+                  trap_scope->bci(), p2i(fr.pc()), fr.pc() - nm->code_begin() JVMCI_ONLY(COMMA debug_id));
+          ls.print(" compiler=%s compile_id=%d", nm->compiler_name(), nm->compile_id());
 #if INCLUDE_JVMCI
-        if (nm->is_compiled_by_jvmci()) {
-          const char* installed_code_name = nm->jvmci_name();
-          if (installed_code_name != nullptr) {
-            st.print(" (JVMCI: installed code name=%s) ", installed_code_name);
+          if (nm->is_compiled_by_jvmci()) {
+            const char* installed_code_name = nm->jvmci_name();
+            if (installed_code_name != nullptr) {
+              ls.print(" (JVMCI: installed code name=%s) ", installed_code_name);
+            }
           }
-        }
+#endif
+          ls.print(" (@" INTPTR_FORMAT ") thread=" UINTX_FORMAT " reason=%s action=%s unloaded_class_index=%d" JVMCI_ONLY(" debug_id=%d"),
+                    p2i(fr.pc()),
+                    os::current_thread_id(),
+                    trap_reason_name(reason),
+                    trap_action_name(action),
+                    unloaded_class_index
+#if INCLUDE_JVMCI
+                    , debug_id
+#endif
+                   );
+          if (class_name != nullptr) {
+            ls.print(unresolved ? " unresolved class: " : " symbol: ");
+            class_name->print_symbol_on(&ls);
+          }
+          ls.cr();
+        } else {
+          // TODO sonia - review if we need backwards compatibility.
+          stringStream st;
+          st.print("UNCOMMON TRAP method=%s", trap_scope->method()->name_and_sig_as_C_string());
+          st.print("  bci=%d pc=" INTPTR_FORMAT ", relative_pc=" INTPTR_FORMAT JVMCI_ONLY(", debug_id=%d"),
+                  trap_scope->bci(), p2i(fr.pc()), fr.pc() - nm->code_begin() JVMCI_ONLY(COMMA debug_id));
+          st.print(" compiler=%s compile_id=%d", nm->compiler_name(), nm->compile_id());
+#if INCLUDE_JVMCI
+          if (nm->is_compiled_by_jvmci()) {
+            const char* installed_code_name = nm->jvmci_name();
+            if (installed_code_name != nullptr) {
+              st.print(" (JVMCI: installed code name=%s) ", installed_code_name);
+            }
+          }
 #endif
         st.print(" (@" INTPTR_FORMAT ") thread=%zu reason=%s action=%s unloaded_class_index=%d" JVMCI_ONLY(" debug_id=%d"),
                    p2i(fr.pc()),
@@ -2208,15 +2252,16 @@ JRT_ENTRY(void, Deoptimization::uncommon_trap_inner(JavaThread* current, jint tr
                    trap_action_name(action),
                    unloaded_class_index
 #if INCLUDE_JVMCI
-                   , debug_id
+                    , debug_id
 #endif
                    );
-        if (class_name != nullptr) {
-          st.print(unresolved ? " unresolved class: " : " symbol: ");
-          class_name->print_symbol_on(&st);
+          if (class_name != nullptr) {
+            st.print(unresolved ? " unresolved class: " : " symbol: ");
+            class_name->print_symbol_on(&st);
+          }
+          st.cr();
+          tty->print_raw(st.freeze());
         }
-        st.cr();
-        tty->print_raw(st.freeze());
       }
       if (xtty != nullptr) {
         // Log the precise location of the trap.

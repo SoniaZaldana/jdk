@@ -592,11 +592,13 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
 
   if (TraceDeoptimization) {
     ResourceMark rm;
-    stringStream st;
-    st.print_cr("DEOPT UNPACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT " mode=%d",
-                p2i(current), p2i(this), exec_mode);
-    st.print_cr("   Virtual frames (outermost/oldest first):");
-    tty->print_raw(st.freeze());
+    LogTarget(Debug, deoptimization) lt;
+    if (lt.is_enabled()) {
+      LogStream ls(lt);
+      ls.print_cr("DEOPT UNPACKING thread=" INTPTR_FORMAT " vframeArray=" INTPTR_FORMAT " mode=%d",
+                  p2i(current), p2i(this), exec_mode);
+      ls.print_cr("   Virtual frames (outermost/oldest first):");
+    }
   }
 
   // Do the unpacking of interpreter frames; the frame at index 0 represents the top activation, so it has no callee
@@ -620,21 +622,23 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
     }
     if (TraceDeoptimization) {
       ResourceMark rm;
-      stringStream st;
-      st.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(elem));
-      st.print(" - %s", elem->method()->name_and_sig_as_C_string());
-      int bci = elem->raw_bci();
-      const char* code_name;
-      if (bci == SynchronizationEntryBCI) {
-        code_name = "sync entry";
-      } else {
-        Bytecodes::Code code = elem->method()->code_at(bci);
-        code_name = Bytecodes::name(code);
+      LogTarget(Debug, deoptimization) lt;
+      if (lt.is_enabled()) {
+        LogStream ls(lt);
+        ls.print("      VFrame %d (" INTPTR_FORMAT ")", index, p2i(elem));
+        ls.print(" - %s", elem->method()->name_and_sig_as_C_string());
+        int bci = elem->raw_bci();
+        const char* code_name;
+        if (bci == SynchronizationEntryBCI) {
+          code_name = "sync entry";
+        } else {
+          Bytecodes::Code code = elem->method()->code_at(bci);
+          code_name = Bytecodes::name(code);
+        }
+        ls.print(" - %s", code_name);
+        ls.print(" @ bci=%d ", bci);
+        ls.print_cr("sp=" PTR_FORMAT, p2i(elem->iframe()->sp()));
       }
-      st.print(" - %s", code_name);
-      st.print(" @ bci=%d ", bci);
-      st.print_cr("sp=" PTR_FORMAT, p2i(elem->iframe()->sp()));
-      tty->print_raw(st.freeze());
     }
     elem->unpack_on_stack(caller_actual_parameters,
                           callee_parameters,
@@ -650,9 +654,10 @@ void vframeArray::unpack_to_stack(frame &unpack_frame, int exec_mode, int caller
     caller_actual_parameters = callee_parameters;
   }
   deallocate_monitor_chunks();
-  if (TraceDeoptimization) {
-    tty->cr();
-  }
+  // if (TraceDeoptimization) {
+  //   tty->cr();
+  // }
+  // TODO sonia - review deletion above.
 }
 
 void vframeArray::deallocate_monitor_chunks() {
